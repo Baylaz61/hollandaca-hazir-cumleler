@@ -231,6 +231,17 @@
   .play-bar{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
   .pb-lbl{font-size:11px;font-weight:800;color:#64748b}
   .pb-hint{font-size:10px;color:#94a3b8;font-weight:600;flex-basis:100%;line-height:1.45}
+  .provider-card{background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:14px;padding:14px;margin-bottom:8px}
+  .provider-header{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+  .provider-name{font-size:13px;font-weight:800;color:#1a2f5e;flex:1}
+  .provider-note{font-size:10px;color:#94a3b8;font-weight:600}
+  .toggle-btn{border:none;border-radius:8px;padding:5px 11px;font-family:'Sora',sans-serif;font-size:11px;font-weight:800;cursor:pointer;background:#fee2e2;color:#b91c1c}
+  .toggle-btn.on{background:#dcfce7;color:#166534}
+  .active-label{font-size:12px;font-weight:800;color:#334155;margin-bottom:12px;padding:8px 12px;background:#f1f5f9;border-radius:10px}
+  .dl-strip{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .dl-btn{background:#eef3fc;border:1.5px solid #d7e3fa;border-radius:10px;padding:7px 12px;font-family:'Sora',sans-serif;font-size:12px;font-weight:800;color:#1e40af;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0}
+  .dl-btn:disabled{opacity:.5;cursor:not-allowed}
+  .dl-btn.done{background:#dcfce7;border-color:#86efac;color:#166534}
 </style>
 </head>
 <body>
@@ -317,7 +328,7 @@
     <button class="rate-btn" onclick="cycleRate()">🐢1×</button>
     <span class="pb-hint">Bir 🔊'a bas: kelime 5 kez çalar, sonra alttaki kelimeye otomatik geçer. Tekrar basınca durur.</span>
   </div>
-  <div class="result-count" id="resultCount"></div>
+  <div class="dl-strip"><div class="result-count" id="resultCount"></div><button class="dl-btn" id="dlVisibleBtn" onclick="downloadVisible()" title="Görünen kelimelerin seslerini toplu indir">⬇️ İndir</button></div>
   <div class="cards" id="cardsContainer" data-playlist></div>
 </div>
 
@@ -347,6 +358,9 @@
     <div class="modal-actions">
       <button class="modal-btn ghost" onclick="downloadAudio()">⬇️ Sesleri indir</button>
       <button class="modal-btn primary" onclick="document.getElementById('audioFile').click()">📂 Sesleri yükle</button>
+    </div>
+    <div style="margin-top:8px">
+      <button class="modal-btn danger" style="width:100%" onclick="clearAudioCache()">🗑️ Bozuk sesleri temizle (önbelleği sıfırla)</button>
     </div>
 
     <div class="modal-sep"></div>
@@ -388,24 +402,67 @@
 
 <div class="modal-overlay" id="keyModal" onclick="if(event.target===this)closeKeyModal()">
   <div class="modal">
-    <div class="modal-title">🔑 Gemini API Anahtarı</div>
-    <div class="modal-desc">Gerçek Hollandaca ses (🔊) ve AI öğretmen (🎓) için kendi Gemini anahtarını gir. Ücretsiz alabilirsin.</div>
-    <input class="modal-input" id="keyInput" type="text" placeholder="AIza..." autocomplete="off" autocorrect="off" spellcheck="false">
-    <a class="modal-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">→ Ücretsiz anahtar al (Google AI Studio)</a>
-    <div class="modal-note">🔒 Anahtar yalnızca bu cihazda saklanır, hiçbir sunucuya gönderilmez. Sesler indirildikten sonra cihazda saklanır (IndexedDB), aynı ifade ikinci kez internete gitmez. Not: Gemini sesi çalışmazsa (kota/faturalandırma) otomatik olarak tarayıcı sesine geçilir.</div>
-    <div class="modal-actions">
-      <button class="modal-btn ghost" onclick="clearKey()">Sil</button>
-      <button class="modal-btn primary" onclick="saveKey()">Kaydet</button>
+    <div class="modal-title">⚙️ Ses API Ayarları</div>
+    <div class="active-label" id="activeProviderLabel">Aktif: —</div>
+
+    <div class="provider-card">
+      <div class="provider-header">
+        <span style="font-size:16px">🔵</span>
+        <span class="provider-name">Gemini TTS</span>
+        <span class="provider-note">Kısa kelimeler</span>
+        <button class="toggle-btn" id="geminiToggle" onclick="toggleGemini()">KAPALI</button>
+      </div>
+      <input class="modal-input" id="keyInput" type="text" placeholder="AIza..." autocomplete="off" autocorrect="off" spellcheck="false">
+      <a class="modal-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">→ Ücretsiz anahtar al (Google AI Studio)</a>
+      <div class="modal-actions">
+        <button class="modal-btn ghost" onclick="clearKey()">Sil</button>
+        <button class="modal-btn primary" onclick="saveKey()">Kaydet</button>
+      </div>
+    </div>
+
+    <div class="modal-sep"></div>
+
+    <div class="provider-card">
+      <div class="provider-header">
+        <span style="font-size:16px">🟣</span>
+        <span class="provider-name">ElevenLabs TTS</span>
+        <span class="provider-note">Uzun cümleler için ideal</span>
+        <button class="toggle-btn" id="elToggle" onclick="toggleEL()">KAPALI</button>
+      </div>
+      <input class="modal-input" id="elKeyInput" type="text" placeholder="ElevenLabs API anahtarı..." autocomplete="off" autocorrect="off" spellcheck="false">
+      <input class="modal-input" id="elVoiceInput" type="text" placeholder="Voice ID (varsayılan: pNInz6obpgDQGcFmaJgB)" autocomplete="off" style="margin-top:8px" autocorrect="off" spellcheck="false">
+      <a class="modal-link" href="https://elevenlabs.io/app/voice-library" target="_blank" rel="noopener">→ Hollandaca sesler için ElevenLabs Voice Library</a>
+      <div class="modal-actions">
+        <button class="modal-btn ghost" onclick="clearELKey()">Sil</button>
+        <button class="modal-btn primary" onclick="saveELKey()">Kaydet</button>
+      </div>
+    </div>
+
+    <div class="modal-note" style="margin-top:10px">🔒 Anahtarlar yalnızca bu cihazda saklanır. ElevenLabs etkinken ses kalitesi çok daha iyi — uzun cümleler için önerilir. İkisi de aktifse ElevenLabs önceliklidir.</div>
+    <div class="modal-actions" style="margin-top:12px">
+      <button class="modal-btn ghost" style="width:100%" onclick="closeKeyModal()">Kapat</button>
     </div>
   </div>
 </div>
 
 <script>
 // ===== AYARLAR =====
-const GEMINI_TEXT_MODEL = "gemini-2.5-flash";          // analiz/öğretmen
-const GEMINI_TTS_MODEL  = "gemini-3.1-flash-tts-preview"; // ses
-const TTS_VOICE = "Kore";                               // alternatifler: Puck, Charon, Leda...
-function getApiKey(){ try{ return localStorage.getItem("vak_gemini_key")||""; }catch{ return ""; } }
+const GEMINI_TEXT_MODEL = "gemini-2.5-flash";
+const GEMINI_TTS_MODEL  = "gemini-3.1-flash-tts-preview";
+const TTS_VOICE = "Kore";
+const EL_DEFAULT_VOICE = "pNInz6obpgDQGcFmaJgB"; // ElevenLabs varsayılan ses
+
+// -- Gemini --
+function getApiKey(){ try{return localStorage.getItem("vak_gemini_key")||"";}catch{return "";} }
+function isGeminiEnabled(){ try{return localStorage.getItem("vak_gemini_on")!=="0";}catch{return true;} }
+// -- ElevenLabs --
+function getELKey(){ try{return localStorage.getItem("vak_el_key")||"";}catch{return "";} }
+function getELVoice(){ try{return localStorage.getItem("vak_el_voice")||EL_DEFAULT_VOICE;}catch{return EL_DEFAULT_VOICE;} }
+function isELEnabled(){ try{return localStorage.getItem("vak_el_on")==="1";}catch{return false;} }
+// -- Aktif provider --
+function activeProvider(){ if(isELEnabled()&&getELKey()) return "el"; if(isGeminiEnabled()&&getApiKey()) return "gemini"; return "browser"; }
+function activeVoiceId(){ return activeProvider()==="el"?getELVoice():TTS_VOICE; }
+function cacheKey(text){ return `${activeVoiceId()}::${text}`; }
 
 const DATA = [{"nl": "Hallo!", "tr": "Merhaba!", "cat": "Selamlaşma"}, {"nl": "Goedemorgen!", "tr": "Günaydın!", "cat": "Selamlaşma"}, {"nl": "Goedemiddag!", "tr": "İyi günler!", "cat": "Selamlaşma"}, {"nl": "Goedenavond!", "tr": "İyi akşamlar!", "cat": "Selamlaşma"}, {"nl": "Doei! / Doeg!", "tr": "Görüşürüz! / Hoşça kal!", "cat": "Selamlaşma"}, {"nl": "Tot ziens!", "tr": "Tekrar görüşmek üzere!", "cat": "Selamlaşma"}, {"nl": "Alsjeblieft.", "tr": "Lütfen. / Buyurun.", "cat": "Selamlaşma"}, {"nl": "Dank je wel.", "tr": "Çok teşekkür ederim.", "cat": "Selamlaşma"}, {"nl": "Dank u wel.", "tr": "Çok teşekkürler!", "cat": "Selamlaşma"}, {"nl": "Sorry! / Pardon!", "tr": "Afedersiniz! / Pardon!", "cat": "Selamlaşma"}, {"nl": "Hoe gaat het?", "tr": "Nasılsın?", "cat": "Selamlaşma"}, {"nl": "Hoe gaat het met u?", "tr": "Nasılsınız?", "cat": "Selamlaşma"}, {"nl": "Met mij gaat het goed, dank je.", "tr": "İyiyim, teşekkürler.", "cat": "Selamlaşma"}, {"nl": "Gaat wel.", "tr": "Şöyle böyle. / İdare eder.", "cat": "Selamlaşma"}, {"nl": "En met jou?", "tr": "Ya sen?", "cat": "Selamlaşma"}, {"nl": "Hoe heet je?", "tr": "Adın ne?", "cat": "Selamlaşma"}, {"nl": "Ik heet ...", "tr": "Benim adım ...", "cat": "Selamlaşma"}, {"nl": "Wie is dat?", "tr": "Bu kim?", "cat": "Selamlaşma"}, {"nl": "Leuk je te ontmoeten.", "tr": "Memnun oldum.", "cat": "Selamlaşma"}, {"nl": "Waar kom je vandaan?", "tr": "Nerelisin?", "cat": "Selamlaşma"}, {"nl": "Ik kom uit Turkije.", "tr": "Türkiye'den geliyorum.", "cat": "Selamlaşma"}, {"nl": "Waar woon je?", "tr": "Nerede yaşıyorsun/oturuyorsun?", "cat": "Selamlaşma"}, {"nl": "Ik woon in Amsterdam.", "tr": "Amsterdam'da oturuyorum.", "cat": "Selamlaşma"}, {"nl": "Tot straks! / Tot zo!", "tr": "Sonra görüşürüz! / Az sonra görüşürüz!", "cat": "Selamlaşma"}, {"nl": "Fijne dag nog!", "tr": "İyi günler dilerim!", "cat": "Selamlaşma"}, {"nl": "Ja.", "tr": "Evet.", "cat": "İletişim"}, {"nl": "Nee.", "tr": "Hayır.", "cat": "İletişim"}, {"nl": "Ik weet het niet.", "tr": "Bilmiyorum.", "cat": "İletişim"}, {"nl": "Geen idee.", "tr": "Hiçbir fikrim yok.", "cat": "İletişim"}, {"nl": "Ik begrijp het.", "tr": "Anlıyorum.", "cat": "İletişim"}, {"nl": "Ik begrijp het niet.", "tr": "Bunu anlamıyorum.", "cat": "İletişim"}, {"nl": "Spreekt u Turks / Engels?", "tr": "Türkçe / İngilizce konuşuyor musunuz?", "cat": "İletişim"}, {"nl": "Spreek je Engels?", "tr": "İngilizce konuşuyor musun?", "cat": "İletişim"}, {"nl": "Ik spreek maar een beetje Nederlands.", "tr": "Sadece biraz Hollandaca konuşuyorum.", "cat": "İletişim"}, {"nl": "Kunt u dat herhalen, alstublieft?", "tr": "Bunu tekrar edebilir misiniz lütfen?", "cat": "İletişim"}, {"nl": "Iets langzamer, alstublieft.", "tr": "Lütfen daha yavaş.", "cat": "İletişim"}, {"nl": "Wat zeg je? / Hoe bedoel je?", "tr": "Efendim? / Nasıl yani?", "cat": "İletişim"}, {"nl": "Wat betekent dat?", "tr": "Bu ne anlama geliyor?", "cat": "İletişim"}, {"nl": "Hoe zeg je ... in het Nederlands?", "tr": "Hollandacada ... nasıl denir?", "cat": "İletişim"}, {"nl": "Ik heb een vraag.", "tr": "Bir sorum var.", "cat": "İletişim"}, {"nl": "Geen probleem!", "tr": "Problem değil! / Sorun yok!", "cat": "İletişim"}, {"nl": "Helemaal goed. / Komt goed.", "tr": "Tamamdır. / Halledilir.", "cat": "İletişim"}, {"nl": "Maakt niet uit.", "tr": "Önemli değil. / Zararı yok.", "cat": "İletişim"}, {"nl": "Klopt! / Precies!", "tr": "Aynen öyle! / Kesinlikle!", "cat": "İletişim"}, {"nl": "Dat is waar.", "tr": "Doğru. / Haklısın.", "cat": "İletişim"}, {"nl": "Misschien.", "tr": "Belki.", "cat": "İletişim"}, {"nl": "Zeker.", "tr": "Kesinlikle / Elbette.", "cat": "İletişim"}, {"nl": "Ik ben moe.", "tr": "Yorgunum.", "cat": "İletişim"}, {"nl": "Ik heb honger.", "tr": "Karnım aç.", "cat": "İletişim"}, {"nl": "Ik heb dorst.", "tr": "Susadım.", "cat": "İletişim"}, {"nl": "Een koffie, alsjeblieft.", "tr": "Bir kahve, lütfen.", "cat": "Alışveriş"}, {"nl": "Wat kost dit?", "tr": "Bu ne kadar?", "cat": "Alışveriş"}, {"nl": "Hoeveel is het?", "tr": "Bunun fiyatı ne kadar?", "cat": "Alışveriş"}, {"nl": "De rekening, alstublieft.", "tr": "Hesap lütfen.", "cat": "Alışveriş"}, {"nl": "Kan ik contant betalen?", "tr": "Nakit ödeyebilir miyim?", "cat": "Alışveriş"}, {"nl": "Kan ik pinnen?", "tr": "Kartla ödeyebilir miyim?", "cat": "Alışveriş"}, {"nl": "Dat is dan 15 euro.", "tr": "Toplam 15 Euro yapıyor.", "cat": "Alışveriş"}, {"nl": "Laat maar zitten.", "tr": "Üstü kalsın.", "cat": "Alışveriş"}, {"nl": "Heeft u ... ?", "tr": "Sizde ... var mı?", "cat": "Alışveriş"}, {"nl": "Eet smakelijk!", "tr": "Afiyet olsun!", "cat": "Alışveriş"}, {"nl": "Proost!", "tr": "Şerefe!", "cat": "Alışveriş"}, {"nl": "Dat smaakt lekker! / Lekker!", "tr": "Tadı çok lezzetli!", "cat": "Alışveriş"}, {"nl": "Ik zoek ...", "tr": "... arıyorum.", "cat": "Alışveriş"}, {"nl": "Waar is de kassa?", "tr": "Kasa nerede?", "cat": "Alışveriş"}, {"nl": "Bonnetje erbij?", "tr": "Fiş ister misiniz?", "cat": "Alışveriş"}, {"nl": "Nee, dank je.", "tr": "Hayır, teşekkürler.", "cat": "Alışveriş"}, {"nl": "Ik kijk gewoon even, dank u.", "tr": "Sadece bakıyorum, teşekkürler.", "cat": "Alışveriş"}, {"nl": "Heeft u deze ook in maat M?", "tr": "Bunun M bedeni var mı?", "cat": "Alışveriş"}, {"nl": "Is er hier een restaurant in de buurt?", "tr": "Yakınlarda bir restoran var mı?", "cat": "Alışveriş"}, {"nl": "Een bier, alsjeblieft.", "tr": "Bir bira lütfen.", "cat": "Alışveriş"}, {"nl": "Nog eentje, alsjeblieft.", "tr": "Bir tane daha lütfen.", "cat": "Alışveriş"}, {"nl": "Water, alsjeblieft.", "tr": "Su lütfen.", "cat": "Alışveriş"}, {"nl": "Het is te duur.", "tr": "Bu çok pahalı.", "cat": "Alışveriş"}, {"nl": "Dat is goedkoop.", "tr": "Bu ucuz.", "cat": "Alışveriş"}, {"nl": "Waar kun je hier lekker eten?", "tr": "Burada nerede güzel yemek yenir?", "cat": "Alışveriş"}, {"nl": "Waar is ... ?", "tr": "... nerede?", "cat": "Yön & Ulaşım"}, {"nl": "Waar is de wc, alstublieft?", "tr": "Tuvalet nerede acaba?", "cat": "Yön & Ulaşım"}, {"nl": "Waar is het station?", "tr": "Tren istasyonu nerede?", "cat": "Yön & Ulaşım"}, {"nl": "Rechtdoor.", "tr": "Düz gidin.", "cat": "Yön & Ulaşım"}, {"nl": "Naar links.", "tr": "Sola.", "cat": "Yön & Ulaşım"}, {"nl": "Naar rechts.", "tr": "Sağa.", "cat": "Yön & Ulaşım"}, {"nl": "Ik ben verdwaald.", "tr": "Kayboldum.", "cat": "Yön & Ulaşım"}, {"nl": "Kunt u mij helpen?", "tr": "Bana yardım edebilir misiniz?", "cat": "Yön & Ulaşım"}, {"nl": "Waar kan ik een kaartje kopen?", "tr": "Nereden bilet satın alabilirim?", "cat": "Yön & Ulaşım"}, {"nl": "Gaat deze bus naar ... ?", "tr": "Bu otobüs ...'ye gider mi?", "cat": "Yön & Ulaşım"}, {"nl": "Hoe laat vertrekt de trein?", "tr": "Tren ne zaman kalkıyor?", "cat": "Yön & Ulaşım"}, {"nl": "Hoe laat is het?", "tr": "Saat kaç?", "cat": "Yön & Ulaşım"}, {"nl": "Het is één uur.", "tr": "Saat bir.", "cat": "Yön & Ulaşım"}, {"nl": "Wat doe je vandaag?", "tr": "Bugün ne yapıyorsun?", "cat": "Yön & Ulaşım"}, {"nl": "Ik ga naar huis.", "tr": "Eve gidiyorum.", "cat": "Yön & Ulaşım"}, {"nl": "Ik ben thuis.", "tr": "Evdeyim.", "cat": "Yön & Ulaşım"}, {"nl": "Hoe laat spreken we af?", "tr": "Ne zaman/saat kaçta buluşuyoruz?", "cat": "Yön & Ulaşım"}, {"nl": "Om hoe laat?", "tr": "Saat kaçta?", "cat": "Yön & Ulaşım"}, {"nl": "Waar ben je?", "tr": "Neredesin?", "cat": "Yön & Ulaşım"}, {"nl": "Ik ben onderweg.", "tr": "Yoldayım / Geliyorum.", "cat": "Yön & Ulaşım"}, {"nl": "Ik kom eraan.", "tr": "Hemen geliyorum / Yaklaştım.", "cat": "Yön & Ulaşım"}, {"nl": "Sorry, ik ben te laat.", "tr": "Üzgünüm, geciktim.", "cat": "Yön & Ulaşım"}, {"nl": "Hoe is het weer?", "tr": "Hava nasıl?", "cat": "Yön & Ulaşım"}, {"nl": "Het regent.", "tr": "Yağmur yağıyor.", "cat": "Yön & Ulaşım"}, {"nl": "De zon schijnt.", "tr": "Güneş açıyor / parlıyor.", "cat": "Yön & Ulaşım"}, {"nl": "Ik heb het koud.", "tr": "Üşüyorum.", "cat": "Duygular"}, {"nl": "Ik heb het warm.", "tr": "Bunaldım / Bana sıcak bastı.", "cat": "Duygular"}, {"nl": "Ik ben chagrijnig.", "tr": "Keyfim kaçık / Huysuzum.", "cat": "Duygular"}, {"nl": "Ik ben vrolijk. / Ik ben in een goed humeur.", "tr": "Neşeliyim / Keyfim yerinde.", "cat": "Duygular"}, {"nl": "Ik heb een goed humeur.", "tr": "Keyfim yerinde.", "cat": "Duygular"}, {"nl": "Ik heb een slecht humeur.", "tr": "Moralim bozuk / Keyifsizim.", "cat": "Duygular"}, {"nl": "Ik heb hoofdpijn.", "tr": "Başım ağrıyor.", "cat": "Duygular"}, {"nl": "Ik ben verkouden.", "tr": "Üşüttüm / Nezleyim.", "cat": "Duygular"}, {"nl": "Ik voel me niet zo lekker.", "tr": "Kendimi iyi hissetmiyorum.", "cat": "Duygular"}, {"nl": "Beterschap!", "tr": "Geçmiş olsun!", "cat": "Duygular"}, {"nl": "Goddank!", "tr": "Çok şükür!", "cat": "Duygular"}, {"nl": "Jammer!", "tr": "Yazık! / Tüh!", "cat": "Duygular"}, {"nl": "Echt? / Serieus?", "tr": "Harbi mi? / Gerçekten mi?", "cat": "Duygular"}, {"nl": "Dat maakt me niet uit.", "tr": "Bu benim için fark etmez / Umrumda değil.", "cat": "Duygular"}, {"nl": "Dat is belangrijk voor mij.", "tr": "Bu benim için önemli.", "cat": "Duygular"}, {"nl": "Ik heb geen zin.", "tr": "Hiç canım istemiyor / Hevesim yok.", "cat": "Duygular"}, {"nl": "Ik heb geen tijd.", "tr": "Zamanım yok.", "cat": "Duygular"}, {"nl": "Ik heb stress. / Ik heb het druk.", "tr": "Stresliyim / Yoğunum.", "cat": "Duygular"}, {"nl": "Maak je geen zorgen!", "tr": "Endişelenme! / Merak etme!", "cat": "Duygular"}, {"nl": "Geen paniek!", "tr": "Panik yok!", "cat": "Duygular"}, {"nl": "Rustig maar.", "tr": "Sakin ol.", "cat": "Duygular"}, {"nl": "Ik ben bang.", "tr": "Korkuyorum.", "cat": "Duygular"}, {"nl": "Dat vind ik leuk. / Fijn!", "tr": "Buna sevindim. / Güzel!", "cat": "Duygular"}, {"nl": "Dat is geweldig!", "tr": "Bu harika!", "cat": "Duygular"}, {"nl": "Dat is prachtig!", "tr": "Bu mükemmel!", "cat": "Duygular"}, {"nl": "Heb je vandaag tijd?", "tr": "Bugün zamanın var mı?", "cat": "Randevu"}, {"nl": "Heb je plannen voor het weekend?", "tr": "Hafta sonu bir planın var mı?", "cat": "Randevu"}, {"nl": "Zullen we afspreken?", "tr": "Buluşalım mı?", "cat": "Randevu"}, {"nl": "Zullen we gaan wandelen?", "tr": "Yürüyüşe çıkalım mı?", "cat": "Randevu"}, {"nl": "Laten we een bakkie gaan doen.", "tr": "Hadi bir kahve içmeye gidelim.", "cat": "Randevu"}, {"nl": "Waar spreken we af?", "tr": "Nerede buluşuyoruz?", "cat": "Randevu"}, {"nl": "Schikt het morgen? / Komt het morgen uit?", "tr": "Yarın sana uyar mı?", "cat": "Randevu"}, {"nl": "Ja, dat komt goed uit.", "tr": "Evet, bu bana uyar.", "cat": "Randevu"}, {"nl": "Nee, dan kan ik helaas niet.", "tr": "Hayır, o zaman gelemem maalesef.", "cat": "Randevu"}, {"nl": "Ga je mee?", "tr": "Benimle geliyor musun? / Bize katılıyor musun?", "cat": "Randevu"}, {"nl": "Ik trakteer.", "tr": "Benden olsun / Seni davet ediyorum (Hesabı öderken).", "cat": "Randevu"}, {"nl": "Wat doe je in je vrije tijd?", "tr": "Boş zamanlarında ne yaparsın?", "cat": "Randevu"}, {"nl": "Ik spreek af met vrienden.", "tr": "Arkadaşlarımla buluşuyorum.", "cat": "Randevu"}, {"nl": "Ik blijf vandaag thuis.", "tr": "Bugün evde kalıyorum.", "cat": "Randevu"}, {"nl": "Bel me!", "tr": "Beni ara!", "cat": "Randevu"}, {"nl": "Stuur me een berichtje.", "tr": "Bana mesaj yaz.", "cat": "Randevu"}, {"nl": "Ik stuur je de locatie.", "tr": "Sana konum atıyorum.", "cat": "Randevu"}, {"nl": "Tot zo!", "tr": "Az sonra görüşürüz!", "cat": "Randevu"}, {"nl": "Tot morgen!", "tr": "Yarına kadar görüşmek üzere!", "cat": "Randevu"}, {"nl": "Veel plezier!", "tr": "İyi eğlenceler!", "cat": "Randevu"}, {"nl": "Fijn weekend!", "tr": "İyi hafta sonları!", "cat": "Randevu"}, {"nl": "Insgelijks! / Jij ook, bedankt!", "tr": "Sana da! / Teşekkürler, size de!", "cat": "Randevu"}, {"nl": "Ik moet nu gaan.", "tr": "Şimdi gitmem gerekiyor.", "cat": "Randevu"}, {"nl": "Kom goed thuis!", "tr": "Eve iyi var! / Sağ salim git!", "cat": "Randevu"}, {"nl": "Ik ben goed aangekomen.", "tr": "Sağ salim vardım.", "cat": "Randevu"}, {"nl": "Wat voor werk doe je?", "tr": "Mesleğin ne?", "cat": "İşyeri"}, {"nl": "Ik werk als ...", "tr": "... olarak çalışıyorum.", "cat": "İşyeri"}, {"nl": "Ik studeer nog.", "tr": "Henüz öğrenciyim.", "cat": "İşyeri"}, {"nl": "Ik ben klaar met werken!", "tr": "Mesaim bitti! / İşten çıktım.", "cat": "İşyeri"}, {"nl": "Waar werk je?", "tr": "Nerede çalışıyorsun?", "cat": "İşyeri"}, {"nl": "Heb je broers of zussen?", "tr": "Kardeşin var mı?", "cat": "İşyeri"}, {"nl": "Ik heb een broer en een zus.", "tr": "Bir erkek, bir de kız kardeşim var.", "cat": "İşyeri"}, {"nl": "Ik ben enig kind.", "tr": "Tek çocuğum.", "cat": "İşyeri"}, {"nl": "Ben je getrouwd?", "tr": "Evli misin?", "cat": "İşyeri"}, {"nl": "Ik ben vrijgezel.", "tr": "Bekarım.", "cat": "İşyeri"}, {"nl": "Ik heb een vriendin / een vriend.", "tr": "Sevgilim var.", "cat": "İşyeri"}, {"nl": "Ik woon in een studentenhuis.", "tr": "Öğrenci evinde / paylaşımlı evde kalıyorum.", "cat": "İşyeri"}, {"nl": "Ik moet het huis opruimen.", "tr": "Evi toplamam/temizlemem lazım.", "cat": "İşyeri"}, {"nl": "Ik doe de was.", "tr": "Çamaşırları yıkıyorum.", "cat": "İşyeri"}, {"nl": "Ik moet boodschappen doen.", "tr": "Mutfak alışverişine gitmem lazım.", "cat": "İşyeri"}, {"nl": "Kook jij vandaag?", "tr": "Bugün yemeği sen mi yapıyorsun?", "cat": "İşyeri"}, {"nl": "Het eten is klaar!", "tr": "Yemek hazır!", "cat": "İşyeri"}, {"nl": "Ik ga naar bed.", "tr": "Yatağa gidiyorum / yatıyorum.", "cat": "İşyeri"}, {"nl": "Welterusten! / Goedenacht!", "tr": "İyi geceler!", "cat": "İşyeri"}, {"nl": "Slaap lekker!", "tr": "İyi uykular!", "cat": "İşyeri"}, {"nl": "Droom zoet!", "tr": "Tatlı rüyalar!", "cat": "İşyeri"}, {"nl": "Ik sta 's ochtends om 7 uur op.", "tr": "Sabahları saat 7'de kalkarım.", "cat": "İşyeri"}, {"nl": "Ik poets mijn tanden.", "tr": "Dişlerimi fırçalıyorum.", "cat": "İşyeri"}, {"nl": "Ik neem een douche.", "tr": "Duş alıyorum.", "cat": "İşyeri"}, {"nl": "Ik kleed me aan.", "tr": "Üstümü giyiniyorum.", "cat": "İşyeri"}, {"nl": "Hallo, met wie spreek ich?", "tr": "Alo, kiminle görüşüyorum?", "cat": "Teknoloji"}, {"nl": "Met ...", "tr": "Ben ...", "cat": "Teknoloji"}, {"nl": "Kun je me horen?", "tr": "Beni duyabiliyor musun?", "cat": "Teknoloji"}, {"nl": "De verbinding is slecht.", "tr": "Bağlantı kötü / hat zayıf.", "cat": "Teknoloji"}, {"nl": "Mijn batterij is bijna leeg.", "tr": "Şarjım bitmek üzere.", "cat": "Teknoloji"}, {"nl": "Ik bel je zo terug.", "tr": "Seni sonra geri arayacağım.", "cat": "Teknoloji"}, {"nl": "Ik had je berichtje niet gezien.", "tr": "Mesajını görmemişim.", "cat": "Teknoloji"}, {"nl": "Wat is het wifi-wachtwoord?", "tr": "Wi-Fi şifresi ne?", "cat": "Teknoloji"}, {"nl": "Ik heb geen bereik.", "tr": "Telefonum çekmiyor / Şebeke yok.", "cat": "Teknoloji"}, {"nl": "App me dat even.", "tr": "Bunu bana WhatsApp'tan gönder.", "cat": "Teknoloji"}, {"nl": "Ik ben online.", "tr": "Çevrimiçiyim.", "cat": "Teknoloji"}, {"nl": "Heb je Instagram?", "tr": "Instagram'ın var mı?", "cat": "Teknoloji"}, {"nl": "Volg mij.", "tr": "Beni takip et.", "cat": "Teknoloji"}, {"nl": "Ik ben het vergeten.", "tr": "Bunu unuttum.", "cat": "Teknoloji"}, {"nl": "Dat wist ik niet.", "tr": "Bunu bilmiyordum.", "cat": "Teknoloji"}, {"nl": "Ik kan het me niet herinneren.", "tr": "Hatırlamıyorum.", "cat": "Teknoloji"}, {"nl": "Doe het licht aan, alstublieft.", "tr": "Işığı aç lütfen.", "cat": "Teknoloji"}, {"nl": "Doe het licht uit, alstublieft.", "tr": "Işığı kapat lütfen.", "cat": "Teknoloji"}, {"nl": "Het is te hard. / Te veel lawaai.", "tr": "Çok gürültülü.", "cat": "Teknoloji"}, {"nl": "Kan het iets zachter, alstublieft?", "tr": "Sesi kısabilir misin lütfen?", "cat": "Teknoloji"}, {"nl": "Ik ben bezig.", "tr": "Meşgulüm.", "cat": "Teknoloji"}, {"nl": "Laat me met rust.", "tr": "Beni rahat bırak.", "cat": "Teknoloji"}, {"nl": "Luister naar mij!", "tr": "Beni dinle!", "cat": "Teknoloji"}, {"nl": "Kijk eens!", "tr": "Bak hele! / Şuna bak!", "cat": "Teknoloji"}, {"nl": "Laat maar zitten! / Vergeet het maar!", "tr": "Unut gitsin! / Boşver!", "cat": "Teknoloji"}, {"nl": "Ik geloof van wel.", "tr": "Bence de öyle. / Öyle inanıyorum.", "cat": "Köprü Kelimeler"}, {"nl": "Ik geloof van niet.", "tr": "Hiç sanmıyorum. / İnanmıyorum.", "cat": "Köprü Kelimeler"}, {"nl": "Ik denk dat...", "tr": "Bence... / Şöyle olduğunu düşünüyorum...", "cat": "Köprü Kelimeler"}, {"nl": "Naar mijn mening... / Volgens mij...", "tr": "Benim fikrime göre... / Bence...", "cat": "Köprü Kelimeler"}, {"nl": "Dat maakt me niet uit.", "tr": "Benim için fark etmez. / Bana uyar.", "cat": "Köprü Kelimeler"}, {"nl": "Dat hangt ervan af.", "tr": "Duruma göre değişir. / Duruma bağlı.", "cat": "Köprü Kelimeler"}, {"nl": "Ik weet het niet zeker.", "tr": "Emin değilim.", "cat": "Köprü Kelimeler"}, {"nl": "Dat klopt niet.", "tr": "Bu doğru değil.", "cat": "Köprü Kelimeler"}, {"nl": "Dat is een kwestie van smaak.", "tr": "Bu bir zevk meselesi.", "cat": "Köprü Kelimeler"}, {"nl": "Ik vind het saai.", "tr": "Bunu sıkıcı buluyorum.", "cat": "Köprü Kelimeler"}, {"nl": "Ik vind het interessant.", "tr": "Bunu ilginç buluyorum.", "cat": "Köprü Kelimeler"}, {"nl": "Dat is een goed idee!", "tr": "Bu iyi bir fikir!", "cat": "Köprü Kelimeler"}, {"nl": "Wat een onzin!", "tr": "Bu saçmalık!", "cat": "Köprü Kelimeler"}, {"nl": "Dat vind ik leuk. / Dat bevalt me.", "tr": "Bu hoşuma gidiyor. / Bunu beğendim.", "cat": "Köprü Kelimeler"}, {"nl": "Dat vind ik helemaal niks.", "tr": "Bu hiç hoşuma gitmedi.", "cat": "Köprü Kelimeler"}, {"nl": "Ik hou hiervan. / Ik vind dit leuk.", "tr": "Bunu seviyorum.", "cat": "Köprü Kelimeler"}, {"nl": "Ik vind dit niet leuk.", "tr": "Bunu sevmiyorum.", "cat": "Köprü Kelimeler"}, {"nl": "Ik drink liever thee dan koffie.", "tr": "Kahvedense çayı tercih ederim.", "cat": "Köprü Kelimeler"}, {"nl": "Wat vind jij? / Wat denk je?", "tr": "Sen ne diyorsun? / Senin fikrin ne?", "cat": "Köprü Kelimeler"}, {"nl": "Ben je het ermee eens?", "tr": "Katılıyor musun? / Kabul ediyor musun?", "cat": "Köprü Kelimeler"}, {"nl": "Ik ga ermee akkoord.", "tr": "Bunu kabul ediyorum. / Bana uyar.", "cat": "Köprü Kelimeler"}, {"nl": "Geen sprake van! / Echt niet!", "tr": "Asla! / Hiçbir şekilde olmaz!", "cat": "Köprü Kelimeler"}, {"nl": "Sowieso! / Zeker weten!", "tr": "Kesinlikle! / Her halükarda!", "cat": "Köprü Kelimeler"}, {"nl": "Het ligt eraan.", "tr": "Bakalım, duruma göre.", "cat": "Köprü Kelimeler"}, {"nl": "Dat is niet echt mijn ding.", "tr": "Bu bana göre değil. / Tarzım değil.", "cat": "Köprü Kelimeler"}, {"nl": "Goede reis!", "tr": "İyi yolculuklar!", "cat": "Seyahat"}, {"nl": "Fijne vakantie!", "tr": "İyi tatiller!", "cat": "Seyahat"}, {"nl": "Ik ga met de auto.", "tr": "Arabayla gidiyorum.", "cat": "Seyahat"}, {"nl": "Ik ga met de metro.", "tr": "Metroyla gidiyorum.", "cat": "Seyahat"}, {"nl": "Ik ga te voet.", "tr": "Yürüyerek gidiyorum.", "cat": "Seyahat"}, {"nl": "De trein heeft vertraging.", "tr": "Tren rötar yaptı.", "cat": "Seyahat"}, {"nl": "Ik sta in de file.", "tr": "Trafikte kaldım / Trafikte bekliyorum.", "cat": "Seyahat"}, {"nl": "Waar kan ik parkeren?", "tr": "Nereye park edebilirim?", "cat": "Seyahat"}, {"nl": "Is deze plek nog vrij?", "tr": "Bu yer boş mu?", "cat": "Seyahat"}, {"nl": "Ik moet overstappen.", "tr": "Aktarma yapmam gerekiyor.", "cat": "Seyahat"}, {"nl": "Stop hier maar, alstublieft.", "tr": "Burada dur lütfen.", "cat": "Seyahat"}, {"nl": "Ik ben op vakantie.", "tr": "Tatil yapıyorum / Tatildeyim.", "cat": "Seyahat"}, {"nl": "Ik vlieg naar Istanbul.", "tr": "İstanbul'a uçuyorum.", "cat": "Seyahat"}, {"nl": "Waar is mijn koffer?", "tr": "Bavulum nerede?", "cat": "Seyahat"}, {"nl": "Ik ben mijn kaartje kwijt.", "tr": "Biletimi kaybettim.", "cat": "Seyahat"}, {"nl": "Hoe lang duurt de reis?", "tr": "Yolculuk ne kadar sürüyor?", "cat": "Seyahat"}, {"nl": "Het duurt ongeveer een uur.", "tr": "Yaklaşık bir saat sürüyor.", "cat": "Seyahat"}, {"nl": "Ik ben er zo.", "tr": "Neredeyse geldim / eli kulağında.", "cat": "Seyahat"}, {"nl": "Waar is de uitgang?", "tr": "Çıkış nerede?", "cat": "Seyahat"}, {"nl": "Waar is de ingang?", "tr": "Giriş nerede?", "cat": "Seyahat"}, {"nl": "Volgende halte, alstublieft.", "tr": "Gelecek durakta lütfen.", "cat": "Seyahat"}, {"nl": "Eentje retour, alstublieft.", "tr": "Gidiş-dönüş lütfen (Bilet alırken).", "cat": "Seyahat"}, {"nl": "Alleen een enkeltje, alstublieft.", "tr": "Sadece gidiş lütfen.", "cat": "Seyahat"}, {"nl": "Is er hier een tankstation in de buurt?", "tr": "Yakınlarda bir benzinlik var mı?", "cat": "Seyahat"}, {"nl": "Ik moet tanken.", "tr": "Benzin almam/yakıt doldurmam lazım.", "cat": "Seyahat"}, {"nl": "Ik ben ziek.", "tr": "Hastayım.", "cat": "İnce Çakıl"}, {"nl": "Ik moet naar de dokter.", "tr": "Doktora gitmem gerekiyor.", "cat": "İnce Çakıl"}, {"nl": "Ik moet een afspraak maken.", "tr": "Randevuya ihtiyacım var.", "cat": "İnce Çakıl"}, {"nl": "Ik heb koorts.", "tr": "Ateşim var.", "cat": "İnce Çakıl"}, {"nl": "Ik ben misselijk.", "tr": "Midem bulanıyor.", "cat": "İnce Çakıl"}, {"nl": "Ik heb buikpijn.", "tr": "Karnım ağrıyor.", "cat": "İnce Çakıl"}, {"nl": "Ik heb rugpijn.", "tr": "Sırtım/belim ağrıyor.", "cat": "İnce Çakıl"}, {"nl": "Waar doet het pijn?", "tr": "Neresi ağrıyor?", "cat": "İnce Çakıl"}, {"nl": "Het doet hier pijn.", "tr": "Burası ağrıyor.", "cat": "İnce Çakıl"}, {"nl": "Ik heb medicijnen nodig.", "tr": "İlaca ihtiyacım var.", "cat": "İnce Çakıl"}, {"nl": "Is er hier een apotheek in de buurt?", "tr": "Yakınlarda bir eczane var mı?", "cat": "İnce Çakıl"}, {"nl": "Dit is op recept.", "tr": "Bu reçeteye tabi.", "cat": "İnce Çakıl"}, {"nl": "Ik ben allergisch voor...", "tr": "...'ye karşı alerjim var.", "cat": "İnce Çakıl"}, {"nl": "Ik ben gewond.", "tr": "Yaralıyım.", "cat": "İnce Çakıl"}, {"nl": "Bel een ambulance!", "tr": "Ambulans çağırın!", "cat": "İnce Çakıl"}, {"nl": "Het is een noodgeval!", "tr": "Bu bir acil durum!", "cat": "İnce Çakıl"}, {"nl": "Heeft u pleisters?", "tr": "Yaran bandınız var mı?", "cat": "İnce Çakıl"}, {"nl": "Ik moet uitrusten.", "tr": "Dinlenmem gerekiyor.", "cat": "İnce Çakıl"}, {"nl": "Ik voel me al wat beter.", "tr": "Daha iyi hissediyorum bile.", "cat": "İnce Çakıl"}, {"nl": "Ik ben weer beter.", "tr": "Tekrar iyileştim / sağlıklıyım.", "cat": "İnce Çakıl"}, {"nl": "Moet je hoesten?", "tr": "Öksürüyor musun?", "cat": "İnce Çakıl"}, {"nl": "Ik ben verkouden. / Ik heb een snotneus.", "tr": "Nezlem var / burnum akıyor.", "cat": "İnce Çakıl"}, {"nl": "Ik ben duizelig.", "tr": "Başım dönüyor.", "cat": "İnce Çakıl"}, {"nl": "Neem deze tablet.", "tr": "Bu hapı/tableti al.", "cat": "İnce Çakıl"}, {"nl": "Twee keer per dag.", "tr": "Günde iki defa.", "cat": "İnce Çakıl"}, {"nl": "Gefeliciteerd met je verjaardag!", "tr": "Doğum günün kutlu olsun!", "cat": "Melankoli"}, {"nl": "Al het goede!", "tr": "En iyi dileklerimle!", "cat": "Melankoli"}, {"nl": "Fijne kerstdagen!", "tr": "Mutlu Noeller!", "cat": "Melankoli"}, {"nl": "Gelukkig nieuwjaar!", "tr": "Mutlu yıllar!", "cat": "Melankoli"}, {"nl": "Fijne feestdagen!", "tr": "İyi bayramlar!", "cat": "Melankoli"}, {"nl": "Van harte gefeliciteerd!", "tr": "Gönülden tebrik ederim!", "cat": "Melankoli"}, {"nl": "Veel succes!", "tr": "Başarılar dilerim!", "cat": "Melankoli"}, {"nl": "Veel geluk!", "tr": "Bol şans!", "cat": "Melankoli"}, {"nl": "Je kunt het!", "tr": "Bunu başarırsın! / Yapabilirsin!", "cat": "Melankoli"}, {"nl": "Ik zal voor je duimen!", "tr": "Başarılar! / Şansın yaver gitsin diye parmaklarımı çaprazlayacağım.", "cat": "Melankoli"}, {"nl": "Dat was per ongeluk.", "tr": "Yanlışlıkla oldu.", "cat": "Melankoli"}, {"nl": "Dat was met opzet.", "tr": "Bilerek/kasten yapıldı.", "cat": "Melankoli"}, {"nl": "Kijk eens!", "tr": "Baksana bir!", "cat": "Melankoli"}, {"nl": "Kom binnen!", "tr": "İçeri gel!", "cat": "Melankoli"}, {"nl": "Ga lekker zitten.", "tr": "Otur lütfen / Yer gösterirken.", "cat": "Melankoli"}, {"nl": "Maak het jezelf comfortabel.", "tr": "Rahatına bak.", "cat": "Melankoli"}, {"nl": "Wil je iets drinken?", "tr": "Bir şeyler içmek ister misin?", "cat": "Melankoli"}, {"nl": "Tast toe! / Pak wat sen wilt.", "tr": "Kendine ikram et, çekinme (Sofrada).", "cat": "Melankoli"}, {"nl": "Het was erg gezellig vandaag.", "tr": "Bugün çok güzeldi/keyifliydi.", "cat": "Melankoli"}, {"nl": "Bedankt voor de uitnodiging.", "tr": "Davet için çok teşekkür ederim.", "cat": "Melankoli"}, {"nl": "Kom snel weer eens langs!", "tr": "Yakında yine gel!", "cat": "Melankoli"}, {"nl": "Ik moet opschieten.", "tr": "Acele etmem lazım.", "cat": "Melankoli"}, {"nl": "Doe rustig aan.", "tr": "Acele etme, zamanın var.", "cat": "Melankoli"}, {"nl": "Ik ben aan de late kant.", "tr": "Geç kaldım / Yetişmem lazım.", "cat": "Melankoli"}, {"nl": "Dat is genoeg!", "tr": "Bu kadar yeter!", "cat": "Melankoli"}, {"nl": "Mag ik er even langs?", "tr": "Geçebilir miyim?", "cat": "Sınır Çizme"}, {"nl": "Kunt u mij een plezier doen?", "tr": "Bana bir iyilik yapabilir misiniz?", "cat": "Sınır Çizme"}, {"nl": "Mag ik hier zitten?", "tr": "Buraya oturabilir miyim?", "cat": "Sınır Çizme"}, {"nl": "Mag ik heel even storen?", "tr": "Çok kısa rahatsız edebilir miyim?", "cat": "Sınır Çizme"}, {"nl": "Heeft u een momentje?", "tr": "Bir dakikanız var mı?", "cat": "Sınır Çizme"}, {"nl": "Kunt u dit even vasthouden, alstublieft?", "tr": "Bunu tutabilir misiniz lütfen?", "cat": "Sınır Çizme"}, {"nl": "Mag ik je telefoon gebruiken?", "tr": "Telefonunu kullanabilir miyim?", "cat": "Sınır Çizme"}, {"nl": "Kunt u mij de weg wijzen?", "tr": "Bana yolu gösterebilir misiniz?", "cat": "Sınır Çizme"}, {"nl": "Doe geen moeite.", "tr": "Kendinizi zahmete sokmayın.", "cat": "Sınır Çizme"}, {"nl": "Is er hier een postkantoor in de buurt?", "tr": "Yakınlarda bir postane var mı?", "cat": "Sınır Çizme"}, {"nl": "Is er hier bir geldautomaat?", "tr": "Yakınlarda bir ATM var mı?", "cat": "Sınır Çizme"}, {"nl": "Waar kan ik dit afgeven?", "tr": "Bunu nereye teslim edebilirim?", "cat": "Sınır Çizme"}, {"nl": "Ik heb uw handtekening nodig.", "tr": "İmzanıza ihtiyacım var.", "cat": "Sınır Çizme"}, {"nl": "Hier tekenen, alstublieft.", "tr": "Lütfen burayı imzalayın.", "cat": "Sınır Çizme"}, {"nl": "Dat is niet nodig.", "tr": "Buna gerek yok.", "cat": "Sınır Çizme"}, {"nl": "Heeft u wisselgeld?", "tr": "Bozuk paranız var mı?", "cat": "Sınır Çizme"}, {"nl": "Ik heb geen kleingeld.", "tr": "Yanımda bozuk para yok.", "cat": "Sınır Çizme"}, {"nl": "Kunt u dit wisselen?", "tr": "Bunu bozabilir misiniz?", "cat": "Sınır Çizme"}, {"nl": "Ik ben zo klaar.", "tr": "Hemen bitiriyorum / Az kaldı.", "cat": "Sınır Çizme"}, {"nl": "Een momentje, alstublieft.", "tr": "Lütfen bir dakika bekleyin.", "cat": "Sınır Çizme"}, {"nl": "Ik moet even bellen.", "tr": "Kısa bir telefon görüşmesi yapmam lazım.", "cat": "Sınır Çizme"}, {"nl": "Ik ben zo terug.", "tr": "Hemen döneceğim.", "cat": "Sınır Çizme"}, {"nl": "Gaat u zitten, alstublieft.", "tr": "Oturun lütfen (Resmi).", "cat": "Sınır Çizme"}, {"nl": "Pak wat je wilt.", "tr": "Ne isterseniz alın.", "cat": "Sınır Çizme"}, {"nl": "Mag ik binnenkomen?", "tr": "İçeri girebilir miyim?", "cat": "Sınır Çizme"}, {"nl": "Trouwens...", "tr": "Bu arada... / Sırası gelmişken...", "cat": "Şikayet"}, {"nl": "Eigenlijk...", "tr": "Aslında...", "cat": "Şikayet"}, {"nl": "Nou ja, het gaat.", "tr": "Yani, işte, idare eder.", "cat": "Şikayet"}, {"nl": "We zullen zien. / Afwachten.", "tr": "Bakalım. / Göreceğiz.", "cat": "Şikayet"}, {"nl": "Zoals ik al zei...", "tr": "Dediğim gibi...", "cat": "Şikayet"}, {"nl": "Sowieso.", "tr": "Her halükarda / Kesinlikle.", "cat": "Şikayet"}, {"nl": "Echt niet! / Absoluut niet.", "tr": "Asla / Hiçbir şekilde.", "cat": "Şikayet"}, {"nl": "Dat klinkt logisch. / Dat is logisch.", "tr": "Mantıklı.", "cat": "Şikayet"}, {"nl": "Dat slaat nergens op.", "tr": "Hiç mantıklı değil. / Saçma.", "cat": "Şikayet"}, {"nl": "Ik heb me vergist.", "tr": "Yanlış görmüşüm/yanılmışım.", "cat": "Şikayet"}, {"nl": "Dat zou kunnen.", "tr": "Olabilir. / İhtimal dahilinde.", "cat": "Şikayet"}, {"nl": "Dat kan niet waar zijn!", "tr": "Olamaz! / Yok artık!", "cat": "Şikayet"}, {"nl": "Weet je het zeker?", "tr": "Emin misin?", "cat": "Şikayet"}, {"nl": "Heel zeker.", "tr": "Tamamen eminim.", "cat": "Şikayet"}, {"nl": "Ik weet het niet zeker.", "tr": "Emin değilim.", "cat": "Şikayet"}, {"nl": "Sorry, dat wist ik niet.", "tr": "Üzgünüm, bunu bilmiyordum.", "cat": "Şikayet"}, {"nl": "Dat is nieuw voor mij.", "tr": "Bunu ilk defa duyuyorum.", "cat": "Şikayet"}, {"nl": "Geen wonder!", "tr": "Şaşılacak bir şey yok! / Çok normal!", "cat": "Şikayet"}, {"nl": "Trek het je tidak aan!", "tr": "Takma kafana! / Boşver!", "cat": "Şikayet"}, {"nl": "Het is niet zo erg.", "tr": "O kadar da kötü değil.", "cat": "Şikayet"}, {"nl": "Goddank!", "tr": "Çok şükür!", "cat": "Şikayet"}, {"nl": "C'est la vie. / Zo is het leven.", "tr": "Hayat böyle işte.", "cat": "Şikayet"}, {"nl": "Wie weet?", "tr": "Kim bilir?", "cat": "Şikayet"}, {"nl": "Je weet maar nooit.", "tr": "Hiç belli olmaz. / Asla bilemeyiz.", "cat": "Şikayet"}, {"nl": "We kijken wel.", "tr": "Bakalım, göreceğiz.", "cat": "Şikayet"}, {"nl": "De vuilnisbak moet naar buiten.", "tr": "Çöpün dışarı atılması lazım.", "cat": "Kriz"}, {"nl": "Zet jij het vuilnis buiten?", "tr": "Çöpü dışarı çıkarır mısın?", "cat": "Kriz"}, {"nl": "Ik moet de was ophangen.", "tr": "Çamaşırları asmam lazım.", "cat": "Kriz"}, {"nl": "De koelkast is leeg.", "tr": "Buzdolabı bomboş.", "cat": "Kriz"}, {"nl": "We moeten boodschappen doen.", "tr": "Alışverişe gitmemiz lazım.", "cat": "Kriz"}, {"nl": "Ik doe de afwas.", "tr": "Bulaşıkları ben yıkıyorum.", "cat": "Kriz"}, {"nl": "Waar staat de stofzuiger?", "tr": "Elektrikli süpürge nerede?", "cat": "Kriz"}, {"nl": "Ik moet het huis schoonmaken.", "tr": "Evi temizlemem lazım.", "cat": "Kriz"}, {"nl": "Het pakketje is binnen.", "tr": "Kargo/paket geldi.", "cat": "Kriz"}, {"nl": "Ik heb een pakketje voor de buren aangenomen.", "tr": "Komşu için bir paket teslim aldım.", "cat": "Kriz"}, {"nl": "Gaat de bel?", "tr": "Kapı/zil mi çalıyor?", "cat": "Kriz"}, {"nl": "Wie is er bij de deur?", "tr": "Kapıdaki kim?", "cat": "Kriz"}, {"nl": "Ik doe de deur wel open.", "tr": "Kapıya bakıyorum.", "cat": "Kriz"}, {"nl": "De brievenbus zit vol.", "tr": "Posta kutusu dolu.", "cat": "Kriz"}, {"nl": "Is er post voor mij?", "tr": "Bana posta var mı?", "cat": "Kriz"}, {"nl": "Ik moet de rekening betalen.", "tr": "Faturayı ödemem lazım.", "cat": "Kriz"}, {"nl": "Het licht doet het niet.", "tr": "Işık/lamba çalışmıyor.", "cat": "Kriz"}, {"nl": "De verwarming is koud.", "tr": "Kalorifer soğuk / yanmıyor.", "cat": "Kriz"}, {"nl": "Zet de verwarming aan, alstublieft.", "tr": "Kaloriferi aç lütfen.", "cat": "Kriz"}, {"nl": "Het tocht hier.", "tr": "Cereyan yapıyor / hava esiyor.", "cat": "Kriz"}, {"nl": "Sluit het raam, alstublieft.", "tr": "Pencereyi kapat lütfen.", "cat": "Kriz"}, {"nl": "Doe de deur open, alstublieft.", "tr": "Kapıyı aç lütfen.", "cat": "Kriz"}, {"nl": "Ik ben mijn sleutels vergeten.", "tr": "Anahtarımı unuttum.", "cat": "Kriz"}, {"nl": "Ik heb mezelf buitengesloten.", "tr": "Dışarıda kaldım (Kapı üstüme kapandı).", "cat": "Kriz"}, {"nl": "Waar heb je dat gekocht?", "tr": "Bunu nereden satın aldın?", "cat": "Kriz"}, {"nl": "Hoe laat begint het?", "tr": "Ne zaman başlıyor?", "cat": "Bıkmışlık"}, {"nl": "We gaan beginnen!", "tr": "Başlıyoruz!", "cat": "Bıkmışlık"}, {"nl": "Ik red het niet op tijd.", "tr": "Zamanında yetişemeyeceğim.", "cat": "Bıkmışlık"}, {"nl": "De bus is al weg.", "tr": "Otobüs kaçtı / gitti.", "cat": "Bıkmışlık"}, {"nl": "Ik heb de trein gemist.", "tr": "Treni kaçırdım.", "cat": "Bıkmışlık"}, {"nl": "Ik heb het druk. / Ik heb stress.", "tr": "Stresliyim / Çok yoğunum.", "cat": "Bıkmışlık"}, {"nl": "Kom je eten?", "tr": "Yemeğe geliyor musun?", "cat": "Bıkmışlık"}, {"nl": "Ik heb al gegeten.", "tr": "Ben çoktan yedim.", "cat": "Bıkmışlık"}, {"nl": "Wat schaft de pot?", "tr": "Yemekte ne var?", "cat": "Bıkmışlık"}, {"nl": "Wil je nog wat?", "tr": "Biraz daha ister misin?", "cat": "Bıkmışlık"}, {"nl": "Ik zit vol, dank je.", "tr": "Doydum, teşekkürler.", "cat": "Bıkmışlık"}, {"nl": "Dat was lekker!", "tr": "Lezzetliydi!", "cat": "Bıkmışlık"}, {"nl": "Kunnen we het verzetten?", "tr": "Bunu erteleyebilir miyiz?", "cat": "Bıkmışlık"}, {"nl": "Schikt het volgende week?", "tr": "Gelecek hafta sana uyar mı?", "cat": "Bıkmışlık"}, {"nl": "Kan het ook iets later?", "tr": "Biraz daha geç olsa olur mu?", "cat": "Bıkmışlık"}, {"nl": "Ik heb een afspraak.", "tr": "Randevum var.", "cat": "Bıkmışlık"}, {"nl": "Ik heb vandaag veel te doen.", "tr": "Bugün yapacak çok işim var.", "cat": "Bıkmışlık"}, {"nl": "Ik ben zo klaar.", "tr": "Hemen bitiriyorum.", "cat": "Bıkmışlık"}, {"nl": "Laten we gaan.", "tr": "Hadi gidelim.", "cat": "Bıkmışlık"}, {"nl": "We moeten gaan.", "tr": "Gitmemiz lazım.", "cat": "Bıkmışlık"}, {"nl": "Ga je met me mee?", "tr": "Benimle geliyor musun?", "cat": "Bıkmışlık"}, {"nl": "Ik wacht buiten.", "tr": "Dışarıda bekliyorum.", "cat": "Bıkmışlık"}, {"nl": "Ik wacht op je.", "tr": "Seni bekliyorum.", "cat": "Bıkmışlık"}, {"nl": "Schiet eens op!", "tr": "Biraz acele et!", "cat": "Bıkmışlık"}, {"nl": "Geen haast!", "tr": "Acele yok!", "cat": "Bıkmışlık"}, {"nl": "Het leven is geen ponykamp.", "tr": "Het leven is geen ponykamp.", "cat": "Durum Kurtarma"}, {"nl": "Je moet de slingers zelf ophangen.", "tr": "Hayatı kendin güzelleştirmelisin", "cat": "Durum Kurtarma"}, {"nl": "Dat is mijn bakkie niet.", "tr": "Beni alakadar etmez / Benim dert edeceğim şey değil", "cat": "Durum Kurtarma"}, {"nl": "Hier zakt mijn broek van af!", "tr": "Hier zakt mijn broek van af!", "cat": "Durum Kurtarma"}, {"nl": "Mijn emmer loopt bijna over!", "tr": "Mijn emmer loopt bijna over!", "cat": "Durum Kurtarma"}, {"nl": "Ik heb er tabak van.", "tr": "Burnuma kadar geldi / Bıktım artık", "cat": "Durum Kurtarma"}, {"nl": "Dit werkt op mijn zenuwen.", "tr": "Acayip sinirimi bozuyor", "cat": "Durum Kurtarma"}, {"nl": "Ik ben aan het einde van mijn Latijn.", "tr": "Gücümün sonundayım / Bittim ben", "cat": "Durum Kurtarma"}, {"nl": "Ik heb vandaag echt de lul-kaart getrokken.", "tr": "Ik heb vandaag echt de lul-kaart getrokken.", "cat": "Durum Kurtarma"}, {"nl": "Dit is de druppel die de emmer doet overlopen!", "tr": "Dit is de druppel die de emmer doet overlopen!", "cat": "Durum Kurtarma"}, {"nl": "Je maakt van een mug een olifant.", "tr": "Pireyi deve yapıyorsun", "cat": "Durum Kurtarma"}, {"nl": "Dat is echt vet goud!", "tr": "harika, bomba", "cat": "Durum Kurtarma"}, {"nl": "Dat is echt asociaal.", "tr": "Dat is echt asociaal.", "cat": "Durum Kurtarma"}, {"nl": "Doe eens even normaal!", "tr": "Doe eens even normaal!", "cat": "Durum Kurtarma"}, {"nl": "Geen plan.", "tr": "Bilmiyorum", "cat": "Durum Kurtarma"}, {"nl": "Wie niet horen wil, moet voelen.", "tr": "Wie niet horen wil, moet voelen.", "cat": "Durum Kurtarma"}, {"nl": "Eigen schuld, dikke bult.", "tr": "Müstahak, kendi düşen ağlamaz", "cat": "Durum Kurtarma"}, {"nl": "Als het kalf verdronken is, dempt men de put.", "tr": "İş işten geçti artık", "cat": "Durum Kurtarma"}, {"nl": "Daar valt geen speld tussen te krijgen.", "tr": "Bu kesin, değiştirilemez bir gerçek", "cat": "Durum Kurtarma"}, {"nl": "Achteraf kijk je een koe in de kont.", "tr": "Sonradan akıl vermek/haklı çıkmak kolaydır", "cat": "Durum Kurtarma"}, {"nl": "Je preekt wijn maar drinkt water.", "tr": "Je preekt wijn maar drinkt water.", "cat": "Durum Kurtarma"}, {"nl": "Ik heb geen interesse in koetjes en kalfjes.", "tr": "boş muhabbet/havadan sudan konuşmak", "cat": "Durum Kurtarma"}, {"nl": "Dit kost me klauwen vol geld.", "tr": "Dit kost me klauwen vol geld.", "cat": "Durum Kurtarma"}, {"nl": "Ik moet elk dubbeltje omdraaien.", "tr": "Ik moet elk dubbeltje omdraaien.", "cat": "Durum Kurtarma"}, {"nl": "Alleen de zon gaat voor niks op.", "tr": "Bedava olan hiçbir şey yoktur", "cat": "Durum Kurtarma"}, {"nl": "Goedkoop is duurkoop.", "tr": "Ucuz mal alan, iki kez alır", "cat": "Umursamazlık"}, {"nl": "Ik leef van de hand in de tand.", "tr": "Günübirlik, anca kendime yetecek kadar kazanıyorum", "cat": "Umursamazlık"}, {"nl": "Zullen we de rekening splitsen?", "tr": "Going Dutch / Tikkie gönderme", "cat": "Umursamazlık"}, {"nl": "Waar voor je geld.", "tr": "Waar voor je geld.", "cat": "Umursamazlık"}, {"nl": "De wereld draait wel door, hoe het ook met je gaat.", "tr": "De Wereld Draait Door", "cat": "Umursamazlık"}, {"nl": "Dat gaat je geen barst aan.", "tr": "Seni hiç ilgilendirmez, haddini bil", "cat": "Umursamazlık"}, {"nl": "We hebben niet samen in de zandbak gezeten.", "tr": "We hebben niet samen in de zandbak gezeten.", "cat": "Umursamazlık"}, {"nl": "Blijf eens zakelijk.", "tr": "Blijf eens zakelijk.", "cat": "Umursamazlık"}, {"nl": "En nu een punt erachter.", "tr": "En nu een punt erachter.", "cat": "Umursamazlık"}, {"nl": "Einde bericht.", "tr": "Einde bericht.", "cat": "Umursamazlık"}, {"nl": "Dit hondenweer maakt me somber.", "tr": "Dit hondenweer maakt me somber.", "cat": "Umursamazlık"}, {"nl": "Alweer vertraging, typisch NS.", "tr": "Alweer vertraging, typisch NS.", "cat": "Umursamazlık"}, {"nl": "Dit kan ik vast wel van de belasting aftrekken.", "tr": "Dit kan ik vast wel van de belasting aftrekken.", "cat": "Umursamazlık"}, {"nl": "We moeten de bal laag houden.", "tr": "We moeten de bal laag houden.", "cat": "Umursamazlık"}, {"nl": "Verstand op nul en gaan!", "tr": "Verstand op nul en gaan!", "cat": "Umursamazlık"}, {"nl": "De emmer is vol.", "tr": "De emmer is vol.", "cat": "Umursamazlık"}, {"nl": "Praat tegen de muur.", "tr": "Praat tegen de muur.", "cat": "Umursamazlık"}, {"nl": "Zand erover!", "tr": "Sünger çek üstüne, unut gitsin", "cat": "Umursamazlık"}, {"nl": "De moed zakt mij niet zomaar in de schoenen.", "tr": "De moed zakt mij niet zomaar in de schoenen.", "cat": "Umursamazlık"}, {"nl": "Moet ik een zakdoekje voor je halen?", "tr": "Moet ik een zakdoekje voor je halen?", "cat": "Umursamazlık"}, {"nl": "Het zal me aan mijn reet roesten.", "tr": "Zerre umurumda değil", "cat": "Umursamazlık"}, {"nl": "Wie dat gelooft, wordt zalig.", "tr": "Wie dat gelooft, wordt zalig.", "cat": "Umursamazlık"}, {"nl": "Dat is niet op mijn mest gegroeid.", "tr": "Dat is niet op mijn mest gegroeid.", "cat": "Umursamazlık"}, {"nl": "Het zal me een biet zijn.", "tr": "Het zal me een biet zijn.", "cat": "Umursamazlık"}, {"nl": "Morgen is er weer een dag.", "tr": "Morgen is er weer een dag.", "cat": "Umursamazlık"}, {"nl": "De soep wordt nooit zo heet gegeten als zij wordt opgediend.", "tr": "De soep wordt nooit zo heet gegeten als zij wordt opgediend.", "cat": "Hayat Devam"}, {"nl": "Het is wat het is.", "tr": "Het is wat het is.", "cat": "Hayat Devam"}, {"nl": "Reizigers moet je niet tegenhouden.", "tr": "Reizigers moet je niet tegenhouden.", "cat": "Hayat Devam"}, {"nl": "Vaarwel.", "tr": "Vaarwel.", "cat": "Hayat Devam"}, {"nl": "Houdoe en bedankt!", "tr": "Houdoe en bedankt!", "cat": "Hayat Devam"}, {"nl": "Zand erover, de kous is af.", "tr": "Mevzu tamamen kapanmıştır, bitmiştir", "cat": "Hayat Devam"}];
 
@@ -421,15 +478,66 @@ let favorites=[], known=[], seenHistory=[], currentDailyIdx=-1;
 let dailyTeacherData=null, teacherCache={}, teacherOpen=new Set(), toastTimer;
 
 // ===== API ANAHTARI MODAL =====
-function openKeyModal(){ const i=document.getElementById("keyInput"); i.value=getApiKey(); document.getElementById("keyModal").classList.add("show"); setTimeout(()=>i.focus(),100); }
+function openKeyModal(){
+  document.getElementById("keyInput").value=getApiKey();
+  document.getElementById("elKeyInput").value=getELKey();
+  const v=getELVoice(); document.getElementById("elVoiceInput").value=v===EL_DEFAULT_VOICE?"":v;
+  const gon=isGeminiEnabled()&&!!getApiKey(), eon=isELEnabled();
+  const gt=document.getElementById("geminiToggle"); if(gt){gt.textContent=gon?"AKTİF":"KAPALI";gt.classList.toggle("on",gon);}
+  const et=document.getElementById("elToggle"); if(et){et.textContent=eon?"AKTİF":"KAPALI";et.classList.toggle("on",eon);}
+  updateActiveLabel();
+  document.getElementById("keyModal").classList.add("show");
+}
 function closeKeyModal(){ document.getElementById("keyModal").classList.remove("show"); }
-function saveKey(){ const k=document.getElementById("keyInput").value.trim(); try{localStorage.setItem("vak_gemini_key",k);}catch{} closeKeyModal(); updateBanner(); showToast(k?"🔑 Anahtar kaydedildi":"Anahtar temizlendi"); }
-function clearKey(){ try{localStorage.removeItem("vak_gemini_key");}catch{} document.getElementById("keyInput").value=""; closeKeyModal(); updateBanner(); showToast("🗑️ Anahtar silindi"); }
+function updateActiveLabel(){
+  const p=activeProvider(), el=document.getElementById("activeProviderLabel"); if(!el) return;
+  const L={"el":"🟣 ElevenLabs TTS","gemini":"🔵 Gemini TTS","browser":"🌐 Tarayıcı sesi"};
+  el.textContent="Aktif: "+L[p];
+}
+function toggleGemini(){
+  const was=isGeminiEnabled(); try{localStorage.setItem("vak_gemini_on",was?"0":"1");}catch{}
+  const newOn=isGeminiEnabled()&&!!getApiKey();
+  const gt=document.getElementById("geminiToggle"); if(gt){gt.textContent=newOn?"AKTİF":"KAPALI";gt.classList.toggle("on",newOn);}
+  updateActiveLabel(); updateBanner();
+}
+function toggleEL(){
+  const on=!isELEnabled(); try{localStorage.setItem("vak_el_on",on?"1":"0");}catch{}
+  const et=document.getElementById("elToggle"); if(et){et.textContent=on?"AKTİF":"KAPALI";et.classList.toggle("on",on);}
+  updateActiveLabel(); updateBanner();
+}
+function saveKey(){
+  const k=document.getElementById("keyInput").value.trim();
+  try{localStorage.setItem("vak_gemini_key",k); if(k) localStorage.setItem("vak_gemini_on","1");}catch{}
+  updateActiveLabel(); updateBanner(); showToast(k?"🔵 Gemini anahtarı kaydedildi":"Anahtar temizlendi");
+}
+function clearKey(){
+  try{localStorage.removeItem("vak_gemini_key"); localStorage.removeItem("vak_gemini_on");}catch{}
+  document.getElementById("keyInput").value=""; updateActiveLabel(); updateBanner(); showToast("🗑️ Gemini anahtarı silindi");
+}
+function saveELKey(){
+  const k=document.getElementById("elKeyInput").value.trim();
+  const v=document.getElementById("elVoiceInput").value.trim();
+  try{ if(k) localStorage.setItem("vak_el_key",k); if(v) localStorage.setItem("vak_el_voice",v); if(k) localStorage.setItem("vak_el_on","1"); }catch{}
+  const et=document.getElementById("elToggle"); if(et&&k){et.textContent="AKTİF";et.classList.add("on");}
+  updateActiveLabel(); updateBanner(); showToast(k?"🟣 ElevenLabs kaydedildi":"Anahtar temizlendi");
+}
+function clearELKey(){
+  try{localStorage.removeItem("vak_el_key"); localStorage.removeItem("vak_el_on");}catch{}
+  const ei=document.getElementById("elKeyInput"); if(ei) ei.value="";
+  const et=document.getElementById("elToggle"); if(et){et.textContent="KAPALI";et.classList.remove("on");}
+  updateActiveLabel(); updateBanner(); showToast("🗑️ ElevenLabs anahtarı silindi");
+}
 function updateBanner(){
-  const has=!!getApiKey();
+  const p=activeProvider();
   const b=document.getElementById("aiBanner"), t=document.getElementById("aiBannerText"), s=document.getElementById("aiBannerSub"), kb=document.getElementById("keyBtn");
-  if(has){ b.classList.remove("warn"); t.textContent="Gemini AI aktif"; s.textContent="🔊 Gerçek ses · ⭐ Favori · 🎓 Gramer · 📝 Test"; if(kb)kb.classList.remove("active"); }
-  else { b.classList.add("warn"); t.textContent="Anahtar girilmedi (tarayıcı sesi kullanılıyor)"; s.textContent="Dokun → ücretsiz Gemini anahtarı ile gerçek Hollandaca ses"; if(kb)kb.classList.add("active"); }
+  if(p!=="browser"){
+    b.classList.remove("warn");
+    t.textContent=p==="el"?"🟣 ElevenLabs TTS aktif":"🔵 Gemini TTS aktif";
+    s.textContent="🔊 Gerçek ses · ⭐ Favori · 🎓 Gramer · 📝 Test"; if(kb) kb.classList.remove("active");
+  } else {
+    b.classList.add("warn"); t.textContent="API anahtarı girilmedi (tarayıcı sesi)";
+    s.textContent="⚙️ Dokun → Gemini veya ElevenLabs anahtarı gir"; if(kb) kb.classList.add("active");
+  }
 }
 
 // ===== STORAGE =====
@@ -635,9 +743,17 @@ async function cacheSet(k,blob){ try{ const db=await openDB(); await new Promise
 
 // hangi seslerin hazır olduğunu takip et (yeşil mikrofon)
 let cachedKeys=new Set();
-function isCached(text){ return cachedKeys.has(`${TTS_VOICE}::${text}`); }
+function isCached(text){ return cachedKeys.has(cacheKey(text)); }
 async function loadCachedKeys(){ try{ const db=await openDB(); const keys=await new Promise((r,j)=>{ const q=db.transaction("audio","readonly").objectStore("audio").getAllKeys(); q.onsuccess=()=>r(q.result||[]); q.onerror=()=>j(q.error); }); cachedKeys=new Set(keys); }catch{ cachedKeys=new Set(); } }
 async function cacheGetAll(){ try{ const db=await openDB(); const s=db.transaction("audio","readonly").objectStore("audio"); const keys=await new Promise((r,j)=>{const q=s.getAllKeys();q.onsuccess=()=>r(q.result||[]);q.onerror=()=>j(q.error);}); const vals=await new Promise((r,j)=>{const q=s.getAll();q.onsuccess=()=>r(q.result||[]);q.onerror=()=>j(q.error);}); return {keys,vals}; }catch{ return {keys:[],vals:[]}; } }
+async function clearAudioCache(){
+  if(!confirm("Kaydedilmiş tüm sesler silinsin mi? Bir sonraki çalıştırmada 1,6 sn aralıklarla yeniden indirilecek.")) return;
+  try{
+    const db=await openDB();
+    await new Promise((r,j)=>{ const t=db.transaction("audio","readwrite"); t.objectStore("audio").clear(); t.oncomplete=r; t.onerror=j; });
+    cachedKeys.clear(); renderCards(); closeBackupModal(); showToast("🗑️ Ses önbelleği temizlendi");
+  }catch{ showToast("Temizlenemedi"); }
+}
 function blobToB64(blob){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(String(r.result).split(",")[1]||""); r.onerror=()=>rej(r.error); r.readAsDataURL(blob); }); }
 
 async function downloadAudio(){
@@ -699,8 +815,18 @@ function pcmToWav(pcm,rate){
   ws("data"); dv.setUint32(o,ds,true);o+=4; new Uint8Array(buf,44).set(pcm);
   return new Blob([buf],{type:"audio/wav"});
 }
+// TTS istekleri arasında minimum boşluk — ücretsiz tier rate-limit koruması
+const TTS_MIN_GAP_MS = 1600;
+let _lastTTSCall = 0;
+
 async function geminiTTS(text){
   const key=getApiKey(); if(!key) throw new Error("no-key");
+
+  // Rate-limit: önceki istekten bu yana yeterince zaman geçmediyse bekle
+  const now=Date.now(), wait=TTS_MIN_GAP_MS-(now-_lastTTSCall);
+  if(wait>0) await new Promise(r=>setTimeout(r,wait));
+  _lastTTSCall=Date.now();
+
   const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_TTS_MODEL}:generateContent?key=${encodeURIComponent(key)}`,{
     method:"POST",headers:{"Content-Type":"application/json"},
     body:JSON.stringify({ contents:[{parts:[{text:`Lees de volgende Nederlandse zin rustig en duidelijk voor: "${text}"`}]}], generationConfig:{ responseModalities:["AUDIO"], speechConfig:{ voiceConfig:{ prebuiltVoiceConfig:{ voiceName:TTS_VOICE } } } } })
@@ -710,6 +836,66 @@ async function geminiTTS(text){
   const part=(data.candidates?.[0]?.content?.parts||[]).find(p=>p.inlineData);
   if(!part) throw new Error("Ses verisi gelmedi");
   return pcmToWav(b64ToBytes(part.inlineData.data), rateFromMime(part.inlineData.mimeType));
+}
+
+async function elevenlabsTTS(text){
+  const key=getELKey(); if(!key) throw new Error("no-el-key");
+  const voiceId=getELVoice();
+  const now=Date.now(), wait=TTS_MIN_GAP_MS-(now-_lastTTSCall);
+  if(wait>0) await new Promise(r=>setTimeout(r,wait));
+  _lastTTSCall=Date.now();
+  const res=await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,{
+    method:"POST",
+    headers:{"xi-api-key":key,"Content-Type":"application/json","Accept":"audio/mpeg"},
+    body:JSON.stringify({text, model_id:"eleven_multilingual_v2",
+      voice_settings:{stability:0.6,similarity_boost:0.75,style:0,use_speaker_boost:true}})
+  });
+  if(!res.ok){ const e=await res.json().catch(()=>null); throw new Error(e?.detail?.message||`ElevenLabs ${res.status}`); }
+  const ab=await res.arrayBuffer();
+  return new Blob([ab],{type:"audio/mpeg"});
+}
+// aktif provider'a göre TTS dağıtıcı
+async function activeTTS(text){
+  const p=activeProvider();
+  if(p==="el") return elevenlabsTTS(text);
+  if(p==="gemini") return geminiTTS(text);
+  throw new Error("no-api");
+}
+
+// === GRUP TOPLU İNDİRME ===
+let _dlRunning=false;
+async function downloadGroup(items, btnEl){
+  if(_dlRunning){ showToast("⏳ İndirme devam ediyor..."); return; }
+  const p=activeProvider(); if(p==="browser"){ showToast("⚙️ Önce ⚙️ den bir API anahtarı gir"); return; }
+  _dlRunning=true; if(btnEl) btnEl.disabled=true;
+  let done=0, fresh=0;
+  for(const item of items){
+    const ck=cacheKey(item.text);
+    if(cachedKeys.has(ck)){ done++; if(btnEl) btnEl.textContent=`⬇️ ${done}/${items.length}`; continue; }
+    try{
+      const blob=await activeTTS(item.text);
+      await cacheSet(ck,blob); cachedKeys.add(ck); fresh++;
+      const btn=document.querySelector(`[data-speak="${item.key}"]`); if(btn) btn.classList.add("ready");
+    }catch(e){ /* hata varsa atla */ }
+    done++; if(btnEl) btnEl.textContent=`⬇️ ${done}/${items.length}`;
+  }
+  _dlRunning=false;
+  if(btnEl){ btnEl.disabled=false; btnEl.textContent=`✅ ${items.length}`; btnEl.classList.add("done"); }
+  renderCards(); showToast(`✅ ${fresh} yeni ses indirildi`);
+}
+function downloadSection(si){
+  const S=MINPAIRS[si]; if(!S) return;
+  const items=S.pairs.flatMap((p,pi)=>[{text:p.a,key:`m${si}-${pi}a`},{text:p.b,key:`m${si}-${pi}b`}]);
+  downloadGroup(items, document.getElementById(`dl-sec-${si}`));
+}
+function downloadVisible(){
+  const q=(document.getElementById("searchInput")||{value:""}).value.toLowerCase();
+  const filtered=DATA.map((d,i)=>({...d,idx:i})).filter(it=>{
+    if(q&&!(it.nl.toLowerCase().includes(q)||it.tr.toLowerCase().includes(q))) return false;
+    const f=favorites.includes(it.nl),k=known.includes(it.nl);
+    switch(currentCat){case"Tümü":return true;case"Favoriler":return f;case"Bildiklerim":return k;case"Öğreniyorum":return !f&&!k;default:return it.cat===currentCat&&!f&&!k;}
+  });
+  downloadGroup(filtered.map(it=>({text:it.nl,key:`c-${it.idx}`})), document.getElementById("dlVisibleBtn"));
 }
 
 // tek döngü durumu: bir ifade LOOP_GAP_MS arayla tekrar tekrar çalar
@@ -764,11 +950,11 @@ async function speakText(text,key){
   const apiKey=getApiKey();
   if(!apiKey){ browserLoopOnce(text); return; } // anahtar yoksa tarayıcı sesiyle döngü
 
-  const ck=`${TTS_VOICE}::${text}`;
+  const ck=cacheKey(text);
   let blob=null;
   try{
     blob=await cacheGet(ck);
-    if(!blob){ blob=await geminiTTS(text); cacheSet(ck,blob); cachedKeys.add(ck); if(btn) btn.classList.add("ready"); }
+    if(!blob){ blob=await activeTTS(text); cacheSet(ck,blob); cachedKeys.add(ck); if(btn) btn.classList.add("ready"); }
     else { cachedKeys.add(ck); }
   }catch(e){
     if(loop.key!==key) return;                  // bu sırada durdurulmuş
@@ -838,7 +1024,7 @@ function playFrom(btn){
 }
 function speakOnce(text){
   return new Promise(resolve=>{
-    const key=getApiKey(), ck=`${TTS_VOICE}::${text}`;
+    const ck=cacheKey(text);
     const br=()=>{ if(!window.speechSynthesis){resolve();return;} window.speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang="nl-NL"; u.rate=0.9*RATES[rateIdx]; u.pitch=1.03; const vs=window.speechSynthesis.getVoices(); const p=vs.find(v=>v.lang==="nl-NL")||vs.find(v=>v.lang&&v.lang.startsWith("nl")); if(p)u.voice=p; u.onend=()=>resolve(); u.onerror=()=>resolve(); window.speechSynthesis.speak(u); };
     if(!key){ br(); return; }
     cacheGet(ck).then(b=>b||geminiTTS(text).then(nb=>{ cacheSet(ck,nb); cachedKeys.add(ck); return nb; }))
@@ -1120,7 +1306,7 @@ function buildPairs(){
       <div class="pair-mid">↔</div>
       <div class="pw long" onclick="if(!event.target.closest('.speak-btn'))this.querySelector('.speak-btn').click()" style="cursor:pointer"><div class="pw-tag">uzun</div><div class="pw-nl">${escHtml(p.b)}</div><div class="pw-tr">${escHtml(p.bt)}</div><button class="speak-btn pw-speak${isCached(p.b)?' ready':''}" data-speak="m${si}-${pi}b" data-text="${escHtml(p.b).replace(/"/g,'&quot;')}" onclick="event.stopPropagation();playFrom(this)" title="Dinle">🔊</button></div>
     </div>`).join("");
-    return `<div class="lesson" id="pair-sec-${si}"><div class="lesson-head" onclick="toggleSection(${si})"><span class="lesson-ic">🎧</span><span class="lesson-t">${escHtml(S.baslik)}</span><span class="lesson-ar">›</span></div><div class="lesson-body" data-playlist="pair-${si}">${rows}</div></div>`;
+    return `<div class="lesson" id="pair-sec-${si}"><div class="lesson-head" onclick="toggleSection(${si})"><span class="lesson-ic">🎧</span><span class="lesson-t">${escHtml(S.baslik)}</span><span class="lesson-ar">›</span></div><div class="lesson-body" data-playlist="pair-${si}"><div class="dl-strip"><button class="dl-btn" id="dl-sec-${si}" onclick="downloadSection(${si})">⬇️ Sesleri İndir</button><span style="font-size:11px;color:#94a3b8;font-weight:600">${S.pairs.length*2} kelime</span></div>${rows}</div></div>`;
   }).join("");
 }
 
