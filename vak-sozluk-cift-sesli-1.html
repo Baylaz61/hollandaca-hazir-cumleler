@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a2f5e">
+<title>Vak-Sozluk</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{--navy:#1a2f5e;--blue:#2563eb;--accent:#f97316;--bg:#eef2f7;--white:#fff;--text:#1e293b;--muted:#64748b;--light:#f1f5f9;--border:#e2e8f0}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);max-width:480px;margin:0 auto;min-height:100vh}
+  .header{background:linear-gradient(145deg,#1a2f5e,#2563eb);padding:48px 20px 56px;position:relative;overflow:hidden}
+  .header::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.06)}
+  .header::after{content:'';position:absolute;bottom:-30px;left:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.04)}
+  .header-inner{position:relative;z-index:1}
+  .header-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .header-label{font-size:10px;font-weight:700;letter-spacing:3px;color:#93c5fd;text-transform:uppercase;margin-bottom:6px}
+  .header-title{font-size:30px;font-weight:900;color:#fff;letter-spacing:-1.5px}
+  .header-sub{font-size:12px;color:#bfdbfe;margin-top:5px;font-weight:600}
+  .hdr-btn{background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.25);border-radius:14px;padding:9px 13px;color:#fff;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;cursor:pointer;backdrop-filter:blur(8px);transition:all .2s;white-space:nowrap}
+  .hdr-btn.active{background:#f97316;border-color:#f97316}
+  .content{padding:0 16px;margin-top:-28px;padding-bottom:40px}
+  .daily-card{background:linear-gradient(135deg,#f97316,#ef4444);border-radius:22px;padding:20px;margin-bottom:10px;box-shadow:0 10px 28px rgba(249,115,22,.35);position:relative;overflow:hidden}
+  .daily-card::after{content:'🗣️';position:absolute;right:14px;bottom:-4px;font-size:48px;opacity:.12;pointer-events:none}
+  .daily-label{font-size:10px;font-weight:800;letter-spacing:2px;color:rgba(255,255,255,.7);text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+  .daily-counter{font-size:10px;font-weight:700;color:rgba(255,255,255,.5)}
+  .daily-nl{font-size:22px;font-weight:900;color:#fff;line-height:1.3;margin-bottom:6px;padding-right:54px;cursor:pointer}
+  .daily-tr{font-size:13px;color:rgba(255,255,255,.88);padding-right:54px}
+  .daily-actions{display:flex;align-items:center;justify-content:space-between;margin-top:14px;gap:8px}
+  .daily-speak-btn{background:rgba(255,255,255,.2);border:none;border-radius:12px;padding:10px 14px;color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;transition:all .2s;flex:1;justify-content:center}
+  .daily-speak-btn:active{transform:scale(.96)}
+  .daily-speak-btn.playing{background:rgba(255,255,255,.45)}
+  .daily-next-btn{background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.4);border-radius:12px;padding:10px 14px;color:#fff;cursor:pointer;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;transition:all .2s;flex:1;text-align:center}
+  .daily-next-btn:active{transform:scale(.96)}
+  .daily-teacher-btn{background:rgba(255,255,255,.2);border:none;border-radius:12px;padding:10px 14px;color:#fff;cursor:pointer;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;transition:all .2s;flex:1;text-align:center}
+  .daily-teacher-btn:active{transform:scale(.96)}
+  .daily-history{background:var(--white);border-radius:16px;padding:14px 16px;margin-bottom:14px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+  .history-title{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+  .history-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer}
+  .history-item:last-child{border-bottom:none;padding-bottom:0}
+  .history-item:first-child{padding-top:0}
+  .history-nl{font-size:13px;font-weight:700;color:var(--text)}
+  .history-tr{font-size:11px;color:var(--muted);margin-top:1px}
+  .history-speak{background:none;border:none;font-size:16px;cursor:pointer;padding:4px;opacity:.7}
+  .stats-bar{display:flex;gap:10px;margin-bottom:14px}
+  .stat-box{flex:1;background:var(--white);border-radius:14px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+  .stat-box.tap{cursor:pointer;transition:transform .15s}
+  .stat-box.tap:active{transform:scale(.96)}
+  .stat-lbl-sm{font-size:9px}
+  .progress-wrap{height:8px;background:#e2e8f0;border-radius:6px;overflow:hidden;margin-bottom:6px}
+  .progress-fill{height:100%;width:0;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:6px;transition:width .4s ease}
+  .progress-text{font-size:11px;color:#64748b;font-weight:700;text-align:center;margin-bottom:14px}
+  .mark-btn{background:none;border:1.5px solid var(--border);border-radius:8px;padding:2px 9px;font-size:13px;font-weight:800;cursor:pointer;color:#94a3b8;line-height:1.5;transition:all .15s}
+  .mark-btn:active{transform:scale(.9)}
+  .mark-btn.fav.on{color:#f59e0b;border-color:#fcd34d;background:#fffbeb}
+  .mark-btn.known.on{color:#16a34a;border-color:#86efac;background:#f0fdf4}
+  .stat-num{font-size:20px;font-weight:900;color:var(--blue)}
+  .stat-lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+  .ai-banner{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #86efac;border-radius:14px;padding:12px 14px;margin-bottom:14px;cursor:pointer;transition:all .2s}
+  .ai-dot{width:9px;height:9px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,.6);flex-shrink:0;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 6px rgba(34,197,94,.4)}50%{box-shadow:0 0 14px rgba(34,197,94,.8)}}
+  .ai-banner-text{font-size:12px;font-weight:700;color:#166534;flex:1}
+  .ai-banner-sub{font-size:10px;color:#16a34a;font-weight:600;margin-top:2px}
+  .ai-banner.warn{background:linear-gradient(135deg,#fffbeb,#fef3c7);border-color:#fcd34d}
+  .ai-banner.warn .ai-banner-text{color:#92400e}
+  .ai-banner.warn .ai-banner-sub{color:#b45309}
+  .ai-banner.warn .ai-dot{background:#f59e0b;box-shadow:0 0 8px rgba(245,158,11,.6)}
+  .search-wrap{position:relative;margin-bottom:12px}
+  .search-icon{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none}
+  .search-input{width:100%;padding:14px 16px 14px 44px;border-radius:16px;border:2px solid var(--border);background:var(--white);font-family:'Sora',sans-serif;font-size:15px;color:var(--text);outline:none;box-shadow:0 2px 10px rgba(0,0,0,.06);transition:border-color .2s}
+  .search-input:focus{border-color:var(--blue)}
+  .search-input::placeholder{color:#94a3b8}
+  .cats{display:flex;overflow-x:auto;gap:8px;padding-bottom:12px;scrollbar-width:none}
+  .cats::-webkit-scrollbar{display:none}
+  .cat-btn{white-space:nowrap;padding:9px 18px;border-radius:12px;border:none;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;background:var(--white);color:var(--muted);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .cat-btn.active{background:var(--blue);color:#fff;box-shadow:0 4px 14px rgba(37,99,235,.35)}
+  .result-count{font-size:12px;color:#94a3b8;font-weight:600;margin-bottom:12px}
+  .cards{display:flex;flex-direction:column;gap:10px}
+  .card{background:var(--white);border-radius:18px;padding:16px 18px;box-shadow:0 2px 10px rgba(0,0,0,.06);border:1.5px solid var(--border);position:relative;animation:fadeUp .3s ease both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .card-meta{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .card-num{font-size:10px;font-weight:700;color:#94a3b8}
+  .card-cat{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;border-radius:6px}
+  .card-nl{font-size:18px;font-weight:800;color:#1e293b;line-height:1.4;padding-right:76px;margin-bottom:6px}
+  .card-tr{font-size:13px;color:#64748b;padding-right:76px;border-top:1px solid #f1f5f9;padding-top:6px}
+  .card-actions{position:absolute;right:14px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:7px;align-items:center}
+  .speak-btn{background:var(--light);border:none;border-radius:12px;padding:10px;cursor:pointer;color:var(--muted);transition:all .2s;display:flex;align-items:center;justify-content:center}
+  .speak-btn.ready{background:#dcfce7;color:#16a34a}
+  .speak-btn.playing{background:#dbeafe;color:var(--blue);transform:scale(1.12)}
+  .loop-badge{position:absolute;top:-7px;right:-7px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#f97316;color:#fff;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;line-height:1;box-shadow:0 1px 4px rgba(0,0,0,.35);z-index:2}
+  .fav-btn{background:transparent;border:none;cursor:pointer;padding:4px;font-size:19px;transition:transform .2s;line-height:1}
+  .fav-btn:active{transform:scale(1.3)}
+  .teacher-btn{background:transparent;border:none;cursor:pointer;padding:4px;font-size:19px;transition:transform .2s;line-height:1}
+  .teacher-btn.open{filter:drop-shadow(0 0 5px #22c55e)}
+  .card.quiz{cursor:pointer}
+  .quiz-hint{font-size:11px;color:#cbd5e1;margin-top:8px;font-weight:600}
+  .teacher-panel{margin-top:14px;background:#fff;border:1.5px solid #c7d7f5;border-radius:16px;animation:fadeUp .3s ease both}
+  .tp-head{position:sticky;top:0;z-index:6;display:flex;align-items:center;gap:8px;padding:9px 11px;background:#fff;border-bottom:1px solid #e2e8f0;border-radius:15px 15px 0 0}
+  .tp-phrase{flex:1;font-size:13px;font-weight:800;color:#1a2f5e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tp-close{flex-shrink:0;background:var(--light);border:none;border-radius:10px;width:32px;height:32px;font-size:15px;font-weight:800;color:var(--muted);cursor:pointer}
+  .tp-close:active{transform:scale(.92)}
+  .modal-stat{font-size:12px;color:#334155;font-weight:700;background:#eef3fc;border-radius:10px;padding:10px 12px;margin-bottom:12px;line-height:1.6}
+  .modal-area{width:100%;padding:10px 12px;border-radius:12px;border:2px solid var(--border);font-family:monospace;font-size:11px;color:var(--text);outline:none;resize:none;background:#f8fafc}
+  .modal-area:focus{border-color:var(--blue)}
+  .teacher-tabs{display:flex;border-bottom:1px solid #e2e8f0;background:#f8fafc}
+  .teacher-tab{flex:1;padding:10px 6px;font-family:'Sora',sans-serif;font-size:11px;font-weight:700;color:var(--muted);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;text-align:center}
+  .teacher-tab.active{color:#1a2f5e;border-bottom-color:#2563eb;background:#fff}
+  .teacher-body{padding:14px}
+  .teacher-loading{display:flex;align-items:center;gap:10px;color:#2563eb;font-size:13px;font-weight:700;padding:16px}
+  .loader{width:18px;height:18px;border:2.5px solid #c7d7f5;border-top-color:#2563eb;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .teacher-section{display:none;font-size:13px;color:#1e293b;line-height:1.8;white-space:pre-wrap}
+  .teacher-section.active{display:block}
+  .teacher-error{font-size:12px;color:#dc2626;font-weight:600;line-height:1.6;padding:14px}
+  .pronun-box{background:#eef3fc;border-radius:12px;padding:12px 14px;margin-bottom:8px}
+  .pronun-word{font-size:16px;font-weight:800;color:#1a2f5e}
+  .pronun-read{font-size:13px;color:#2563eb;font-weight:700;font-style:italic;margin-top:2px}
+  .pronun-tip{font-size:11px;color:#475569;margin-top:4px}
+  /* Birkenbihl dekod (parçala) */
+  .decode-note{font-size:11px;color:#64748b;line-height:1.6;background:#f1f5f9;border-radius:10px;padding:9px 12px;margin-bottom:12px;font-weight:600}
+  .decode{display:flex;flex-wrap:wrap;gap:8px}
+  .decode-pair{display:flex;flex-direction:column;align-items:flex-start;background:#eef3fc;border:1px solid #d7e3fa;border-radius:10px;padding:7px 10px}
+  .d-nl{font-size:15px;font-weight:800;color:#1a2f5e;line-height:1.2}
+  .d-tr{font-size:11px;font-weight:700;color:#2563eb;margin-top:3px;line-height:1.2}
+  .d-tur{font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+  /* polyglot parçalama: özet + kelime kelime gerekçe */
+  .ozet{background:#eef3fc;border:1px solid #d7e3fa;border-radius:12px;padding:10px 12px;margin-bottom:12px}
+  .ozet-row{display:flex;gap:8px;font-size:12px;line-height:1.55;padding:4px 0}
+  .ozet-row+.ozet-row{border-top:1px dashed #cdddf7}
+  .ozet-k{font-weight:800;color:#1e40af;white-space:nowrap;flex-shrink:0}
+  .ozet-v{color:#334155;font-weight:600}
+  .dx{background:#fff;border:1px solid #e2e8f0;border-left:3px solid #2563eb;border-radius:10px;padding:9px 12px;margin-bottom:7px}
+  .dx-top{display:flex;align-items:center;gap:8px}
+  .dx-nl{font-size:15px;font-weight:800;color:#1a2f5e}
+  .dx-tur{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;background:#dbeafe;color:#1e40af;padding:2px 7px;border-radius:6px}
+  .dx-tr{font-size:12px;color:#2563eb;font-weight:700;margin-top:3px}
+  .dx-not{font-size:12px;color:#475569;line-height:1.55;margin-top:4px}
+  /* hız tuşu */
+  .rate-btn{background:var(--light);border:none;border-radius:12px;padding:7px 6px;cursor:pointer;color:var(--muted);font-family:'Sora',sans-serif;font-size:11px;font-weight:800;line-height:1;white-space:nowrap;transition:all .2s}
+  .rate-btn.slow{background:#ffedd5;color:#c2410c}
+  .daily-next-btn.active{background:rgba(255,255,255,.5)}
+  .word-box{background:#eff6ff;border-radius:12px;padding:10px 14px;margin-bottom:6px}
+  .word-nl{font-size:15px;font-weight:800;color:#1e40af}
+  .word-tr{font-size:13px;color:#3b82f6;margin-top:2px}
+  .word-type{display:inline-block;font-size:10px;font-weight:700;background:#bfdbfe;color:#1e40af;padding:1px 7px;border-radius:6px;margin-top:4px;text-transform:uppercase}
+  .mini-quiz{background:#fefce8;border:1.5px solid #fde047;border-radius:12px;padding:14px;margin-top:4px}
+  .mini-quiz-q{font-size:13px;font-weight:700;color:#854d0e;margin-bottom:10px}
+  .mini-quiz-opts button{display:block;width:100%;text-align:left;padding:9px 12px;border-radius:10px;border:1.5px solid #fde047;background:#fff;font-family:'Sora',sans-serif;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:6px;transition:all .2s;color:#1e293b}
+  .mini-quiz-opts button.correct{background:#dcfce7;border-color:#22c55e;color:#065f46}
+  .mini-quiz-opts button.wrong{background:#fee2e2;border-color:#ef4444;color:#991b1b}
+  .mini-quiz-result{font-size:12px;font-weight:700;margin-top:8px}
+  .empty{text-align:center;padding:48px 20px;color:var(--muted)}
+  .empty-icon{font-size:48px;margin-bottom:12px}
+  .empty-text{font-size:15px;font-weight:700;line-height:1.6}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#1e293b;color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:999;transition:transform .3s;pointer-events:none;white-space:nowrap;max-width:90%;text-align:center}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+  .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+  .modal-overlay.show{display:flex}
+  .modal{background:#fff;border-radius:22px;padding:24px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:fadeUp .25s ease both}
+  .modal-title{font-size:18px;font-weight:900;color:var(--navy);margin-bottom:8px}
+  .modal-desc{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:16px}
+  .modal-input{width:100%;padding:13px 14px;border-radius:14px;border:2px solid var(--border);font-family:'Sora',sans-serif;font-size:14px;color:var(--text);outline:none;transition:border-color .2s}
+  .modal-input:focus{border-color:var(--blue)}
+  .modal-link{display:block;font-size:12px;font-weight:700;color:var(--blue);text-decoration:none;margin:12px 0 14px}
+  .modal-note{font-size:10px;color:#94a3b8;line-height:1.6;margin-bottom:16px;font-weight:600}
+  .modal-actions{display:flex;gap:10px}
+  .modal-btn{flex:1;padding:13px;border-radius:14px;border:none;font-family:'Sora',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all .2s}
+  .modal-btn.primary{background:var(--blue);color:#fff}
+  .modal-btn.primary:active{transform:scale(.97)}
+  .modal-btn.ghost{background:var(--light);color:var(--muted)}
+  .grammar-entry{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#1a2f5e,#3b4f9e);border-radius:16px;padding:14px 16px;margin-bottom:14px;cursor:pointer;box-shadow:0 6px 18px rgba(26,47,94,.3)}
+  .grammar-entry:active{transform:scale(.99)}
+  .ge-ic{font-size:26px}
+  .ge-txt{flex:1}
+  .ge-t{font-size:15px;font-weight:900;color:#fff}
+  .ge-s{font-size:11px;color:#bfdbfe;font-weight:600;margin-top:2px}
+  .ge-arrow{color:#93c5fd;font-size:24px;font-weight:800}
+  .grammar-view{position:fixed;inset:0;max-width:480px;margin:0 auto;background:var(--bg);z-index:800;display:none;flex-direction:column}
+  .grammar-view.show{display:flex}
+  .gv-head{display:flex;align-items:center;gap:10px;padding:16px;background:linear-gradient(145deg,#1a2f5e,#2563eb)}
+  .gv-back{background:rgba(255,255,255,.18);border:none;border-radius:12px;width:40px;height:40px;color:#fff;font-size:22px;font-weight:800;cursor:pointer;line-height:1}
+  .gv-title{flex:1;font-size:18px;font-weight:900;color:#fff}
+  .gv-body{flex:1;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch}
+  .gv-intro{font-size:12px;color:#64748b;font-weight:600;line-height:1.6;margin-bottom:12px;text-align:center}
+  .lesson{background:#fff;border-radius:16px;margin-bottom:10px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+  .lesson-head{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer}
+  .lesson-ic{font-size:22px}
+  .lesson-t{flex:1;font-size:15px;font-weight:800;color:#1a2f5e}
+  .lesson-ar{color:#cbd5e1;font-size:22px;font-weight:800;transition:transform .2s;line-height:1}
+  .lesson.open .lesson-ar{transform:rotate(90deg)}
+  .lesson-body{display:none;padding:0 16px 16px}
+  .lesson.open .lesson-body{display:block;animation:fadeUp .25s ease both}
+  .g-intro{font-size:13px;color:#475569;line-height:1.7;margin-bottom:10px}
+  .g-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9}
+  .g-row:last-child{border-bottom:none}
+  .g-nl{font-size:15px;font-weight:800;color:#1a2f5e}
+  .g-tr{font-size:12px;color:#64748b;flex:1}
+  .g-row .speak-btn{padding:7px;font-size:15px}
+  .g-rule{background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:10px 12px;font-size:12px;color:#92400e;line-height:1.65;font-weight:600;margin-top:12px}
+  .g-ex{background:#eef3fc;border:1px solid #d7e3fa;border-radius:12px;padding:12px;margin-top:12px}
+  .g-ex-top{display:flex;align-items:center;gap:10px}
+  .g-ex-nl{flex:1;font-size:15px;font-weight:800;color:#1a2f5e}
+  .g-ex-tr{font-size:12px;color:#2563eb;font-weight:700;margin-top:4px;margin-bottom:8px}
+  .pairs-entry{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#ea580c,#f97316);border-radius:16px;padding:14px 16px;margin-bottom:14px;cursor:pointer;box-shadow:0 6px 18px rgba(234,88,12,.3)}
+  .pairs-entry:active{transform:scale(.99)}
+  .pairs-entry .ge-s{color:#ffedd5}
+  .pairs-entry .ge-arrow{color:#fed7aa}
+  .pair{display:flex;align-items:stretch;gap:8px;padding:10px 0;border-bottom:1px solid #f1f5f9}
+  .pair:last-child{border-bottom:none}
+  .pw{flex:1;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:10px 8px;text-align:center;display:flex;flex-direction:column;align-items:center}
+  .pw.long{background:#eef3fc;border-color:#d7e3fa}
+  .pw-nl{font-size:18px;font-weight:900;color:#1a2f5e}
+  .pw-tr{font-size:11px;color:#94a3b8;font-weight:600;margin-top:2px}
+  .pw-speak{margin-top:8px}
+  .pair-mid{display:flex;align-items:center;color:#cbd5e1;font-weight:800;font-size:13px}
+  .pw-tag{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#94a3b8;margin-bottom:3px}
+  .pw.long .pw-tag{color:#2563eb}
+  /* oto-oynat */
+  .auto-now{text-align:center;padding:18px 8px}
+  .auto-now-nl{font-size:30px;font-weight:900;color:#1a2f5e;line-height:1.2}
+  .auto-now-tr{font-size:13px;color:#94a3b8;font-weight:600;margin-top:4px}
+  .auto-prog{font-size:12px;color:#2563eb;font-weight:800;margin-top:14px}
+  .auto-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;margin:0 3px;animation:pulse 1.2s infinite}
+  .modal-btn.danger{background:#fee2e2;color:#b91c1c}
+  .modal-sep{height:1px;background:var(--border);margin:18px 0 14px}
+  .modal-sec-t{font-size:12px;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+  .rep-btn{background:var(--light);border:none;border-radius:12px;padding:7px 9px;cursor:pointer;color:#16a34a;font-family:'Sora',sans-serif;font-size:11px;font-weight:800;line-height:1;white-space:nowrap;transition:all .2s}
+  .play-bar{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+  .pb-lbl{font-size:11px;font-weight:800;color:#64748b}
+  .pb-hint{font-size:10px;color:#94a3b8;font-weight:600;flex-basis:100%;line-height:1.45}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-top">
+      <div>
+        <div class="header-label">🚌 Sürücü &amp; Günlük Hayat</div>
+        <div class="header-title">Vak-Sözlük</div>
+        <div class="header-sub" id="headerSub">Hollandaca / Türkçe</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-shrink:0">
+        <button class="hdr-btn" id="quizToggle" onclick="toggleQuiz()">🎯 Quiz</button>
+        <button class="hdr-btn" onclick="openBackupModal()" title="Yedek">💾</button>
+        <button class="hdr-btn" id="keyBtn" onclick="openKeyModal()" title="API Anahtarı">⚙️</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+  <div class="daily-card">
+    <div class="daily-label">
+      <span>💡 Günün İfadesi</span>
+      <span class="daily-counter" id="dailyCounter"></span>
+    </div>
+    <div class="daily-nl" id="dailyNl" onclick="speakText(this.textContent,'daily')"></div>
+    <div class="daily-tr" id="dailyTr"></div>
+    <div class="daily-actions">
+      <button class="daily-speak-btn" data-speak="daily" onclick="speakText(document.getElementById('dailyNl').textContent,'daily')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+        Dinle
+      </button>
+      <button class="daily-teacher-btn" onclick="askDailyTeacher()">🎓 Analiz</button>
+      <button class="daily-next-btn" id="dailySpeed" onclick="cycleRate()">🐢1×</button>
+      <button class="daily-next-btn" onclick="nextDaily()">⟳ Yeni</button>
+    </div>
+  </div>
+
+  <div id="dailyTeacherWrap"></div>
+
+  <div class="daily-history" id="historyBox" style="display:none">
+    <div class="history-title">📚 Görülen İfadeler</div>
+    <div id="historyList"></div>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-box tap" onclick="selectCatByName('Öğreniyorum')"><div class="stat-num" id="statLearn">0</div><div class="stat-lbl">📚 Öğreniyorum</div></div>
+    <div class="stat-box tap" onclick="selectCatByName('Bildiklerim')"><div class="stat-num" id="statKnown" style="color:#16a34a">0</div><div class="stat-lbl">✅ Biliyorum</div></div>
+    <div class="stat-box tap" onclick="selectCatByName('Favoriler')"><div class="stat-num" id="statFavs" style="color:#f59e0b">0</div><div class="stat-lbl">⭐ Favori</div></div>
+  </div>
+  <div class="progress-wrap"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-text" id="progressText"></div>
+
+  <div class="grammar-entry" onclick="openGrammar()">
+    <div class="ge-ic">📖</div>
+    <div class="ge-txt"><div class="ge-t">Dilbilgisi Eğitimi</div><div class="ge-s">Zamirler · zamanlar · kurallar — sesli & parçala</div></div>
+    <div class="ge-arrow">›</div>
+  </div>
+
+  <div class="pairs-entry" onclick="openPairs()">
+    <div class="ge-ic">🎧</div>
+    <div class="ge-txt"><div class="ge-t">Çift Sesli Kelimeler</div><div class="ge-s">Kısa ↔ uzun ünlü · sadece Hollandaca telaffuz</div></div>
+    <div class="ge-arrow">›</div>
+  </div>
+
+  <div class="ai-banner" id="aiBanner" onclick="openKeyModal()">
+    <div class="ai-dot" id="aiDot"></div>
+    <div>
+      <div class="ai-banner-text" id="aiBannerText">Gemini AI aktif</div>
+      <div class="ai-banner-sub" id="aiBannerSub">🔊 Gerçek ses · ⭐ Favori · 🎓 Gramer · 📝 Test</div>
+    </div>
+  </div>
+
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" type="text" id="searchInput" placeholder="Hollandaca veya Türkçe ara..." oninput="renderCards()" autocomplete="off" autocorrect="off" spellcheck="false">
+  </div>
+  <div class="cats" id="catButtons"></div>
+  <div class="play-bar">
+    <span class="pb-lbl">Oto-tekrar</span>
+    <button class="rep-btn" onclick="repCycle()">🔁5×</button>
+    <button class="rate-btn" onclick="cycleRate()">🐢1×</button>
+    <span class="pb-hint">Bir 🔊'a bas: kelime 5 kez çalar, sonra alttaki kelimeye otomatik geçer. Tekrar basınca durur.</span>
+  </div>
+  <div class="result-count" id="resultCount"></div>
+  <div class="cards" id="cardsContainer" data-playlist></div>
+</div>
+
+<div class="modal-overlay" id="backupModal" onclick="if(event.target===this)closeBackupModal()">
+  <div class="modal">
+    <div class="modal-title">💾 Yedek & Geri Yükle</div>
+    <div class="modal-stat" id="backupStat"></div>
+    <div class="modal-desc" style="margin-bottom:8px">Yedeği kopyala ya da dosya olarak indir. Başka cihaza taşımak veya kaybolursa geri yüklemek için kullan.</div>
+    <textarea class="modal-area" id="backupBox" style="height:96px" readonly></textarea>
+    <div class="modal-actions" style="margin-top:10px">
+      <button class="modal-btn ghost" onclick="copyBackup()">📋 Kopyala</button>
+      <button class="modal-btn primary" onclick="downloadBackup()">⬇️ Dosya indir</button>
+    </div>
+    <div class="modal-desc" style="margin:16px 0 8px">Geri yükle — daha önce kaydettiğin yedek dosyasını seç:</div>
+    <input type="file" id="restoreFile" accept=".json,application/json" style="display:none" onchange="restoreFromFile(this)">
+    <button class="modal-btn primary" style="width:100%" onclick="document.getElementById('restoreFile').click()">📂 Yedek dosyası seç (.json)</button>
+    <details style="margin-top:12px">
+      <summary style="font-size:11px;color:#94a3b8;font-weight:700;cursor:pointer">veya yedek metnini elle yapıştır</summary>
+      <textarea class="modal-area" id="restoreBox" style="height:72px;margin-top:8px" placeholder='{"favorites":[...],"known":[...]}'></textarea>
+      <button class="modal-btn ghost" style="width:100%;margin-top:8px" onclick="restoreBackup()">♻️ Metinden yükle</button>
+    </details>
+
+    <div class="modal-sep"></div>
+    <div class="modal-sec-t">🎵 Ses Yedeği</div>
+    <div class="modal-desc" style="margin-bottom:8px">Üretilmiş Hollandaca sesleri (yeşil mikrofonlar) tek dosyada indir. Geliştirme/yeniden kurulumda geri yükle, API'ye tekrar gitmesin.</div>
+    <input type="file" id="audioFile" accept=".json,application/json" style="display:none" onchange="restoreAudioFromFile(this)">
+    <div class="modal-actions">
+      <button class="modal-btn ghost" onclick="downloadAudio()">⬇️ Sesleri indir</button>
+      <button class="modal-btn primary" onclick="document.getElementById('audioFile').click()">📂 Sesleri yükle</button>
+    </div>
+
+    <div class="modal-sep"></div>
+    <div class="modal-sec-t">🗑️ Sıfırla</div>
+    <div class="modal-desc" style="margin-bottom:8px">Yanlış yedek yüklediysen buradan temizle. Geri alınamaz.</div>
+    <div class="modal-actions">
+      <button class="modal-btn danger" onclick="resetKnown()">Bildiklerimi sıfırla</button>
+      <button class="modal-btn danger" onclick="resetAll()">Tümünü sıfırla</button>
+    </div>
+
+    <div class="modal-actions" style="margin-top:12px">
+      <button class="modal-btn ghost" style="width:100%" onclick="closeBackupModal()">Kapat</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="grammar-view" id="grammarView">
+  <div class="gv-head">
+    <button class="gv-back" onclick="closeGrammar()" title="Geri">‹</button>
+    <div class="gv-title">📖 Dilbilgisi</div>
+    <button class="rep-btn" onclick="repCycle()" title="Kaç kez tekrar">🔁5×</button>
+    <button class="rate-btn" onclick="cycleRate()" title="Yavaşlat / Normal">🐢1×</button>
+  </div>
+  <div class="gv-body" id="gvBody" data-playlist></div>
+</div>
+
+<div class="grammar-view" id="pairsView">
+  <div class="gv-head">
+    <button class="gv-back" onclick="closePairs()" title="Geri">‹</button>
+    <div class="gv-title">🎧 Çift Sesli Kelimeler</div>
+    <button class="rep-btn" onclick="repCycle()" title="Kaç kez tekrar">🔁5×</button>
+    <button class="rate-btn" onclick="cycleRate()" title="Yavaşlat / Normal">🐢1×</button>
+  </div>
+  <div class="gv-body" id="pvBody" data-playlist></div>
+</div>
+
+
+<div class="modal-overlay" id="keyModal" onclick="if(event.target===this)closeKeyModal()">
+  <div class="modal">
+    <div class="modal-title">🔑 Gemini API Anahtarı</div>
+    <div class="modal-desc">Gerçek Hollandaca ses (🔊) ve AI öğretmen (🎓) için kendi Gemini anahtarını gir. Ücretsiz alabilirsin.</div>
+    <input class="modal-input" id="keyInput" type="text" placeholder="AIza..." autocomplete="off" autocorrect="off" spellcheck="false">
+    <a class="modal-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">→ Ücretsiz anahtar al (Google AI Studio)</a>
+    <div class="modal-note">🔒 Anahtar yalnızca bu cihazda saklanır, hiçbir sunucuya gönderilmez. Sesler indirildikten sonra cihazda saklanır (IndexedDB), aynı ifade ikinci kez internete gitmez. Not: Gemini sesi çalışmazsa (kota/faturalandırma) otomatik olarak tarayıcı sesine geçilir.</div>
+    <div class="modal-actions">
+      <button class="modal-btn ghost" onclick="clearKey()">Sil</button>
+      <button class="modal-btn primary" onclick="saveKey()">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== AYARLAR =====
+const GEMINI_TEXT_MODEL = "gemini-2.5-flash";          // analiz/öğretmen
+const GEMINI_TTS_MODEL  = "gemini-3.1-flash-tts-preview"; // ses
+const TTS_VOICE = "Kore";                               // alternatifler: Puck, Charon, Leda...
+function getApiKey(){ try{ return localStorage.getItem("vak_gemini_key")||""; }catch{ return ""; } }
+
+const DATA = [{"nl": "Hallo!", "tr": "Merhaba!", "cat": "Selamlaşma"}, {"nl": "Goedemorgen!", "tr": "Günaydın!", "cat": "Selamlaşma"}, {"nl": "Goedemiddag!", "tr": "İyi günler!", "cat": "Selamlaşma"}, {"nl": "Goedenavond!", "tr": "İyi akşamlar!", "cat": "Selamlaşma"}, {"nl": "Doei! / Doeg!", "tr": "Görüşürüz! / Hoşça kal!", "cat": "Selamlaşma"}, {"nl": "Tot ziens!", "tr": "Tekrar görüşmek üzere!", "cat": "Selamlaşma"}, {"nl": "Alsjeblieft.", "tr": "Lütfen. / Buyurun.", "cat": "Selamlaşma"}, {"nl": "Dank je wel.", "tr": "Çok teşekkür ederim.", "cat": "Selamlaşma"}, {"nl": "Dank u wel.", "tr": "Çok teşekkürler!", "cat": "Selamlaşma"}, {"nl": "Sorry! / Pardon!", "tr": "Afedersiniz! / Pardon!", "cat": "Selamlaşma"}, {"nl": "Hoe gaat het?", "tr": "Nasılsın?", "cat": "Selamlaşma"}, {"nl": "Hoe gaat het met u?", "tr": "Nasılsınız?", "cat": "Selamlaşma"}, {"nl": "Met mij gaat het goed, dank je.", "tr": "İyiyim, teşekkürler.", "cat": "Selamlaşma"}, {"nl": "Gaat wel.", "tr": "Şöyle böyle. / İdare eder.", "cat": "Selamlaşma"}, {"nl": "En met jou?", "tr": "Ya sen?", "cat": "Selamlaşma"}, {"nl": "Hoe heet je?", "tr": "Adın ne?", "cat": "Selamlaşma"}, {"nl": "Ik heet ...", "tr": "Benim adım ...", "cat": "Selamlaşma"}, {"nl": "Wie is dat?", "tr": "Bu kim?", "cat": "Selamlaşma"}, {"nl": "Leuk je te ontmoeten.", "tr": "Memnun oldum.", "cat": "Selamlaşma"}, {"nl": "Waar kom je vandaan?", "tr": "Nerelisin?", "cat": "Selamlaşma"}, {"nl": "Ik kom uit Turkije.", "tr": "Türkiye'den geliyorum.", "cat": "Selamlaşma"}, {"nl": "Waar woon je?", "tr": "Nerede yaşıyorsun/oturuyorsun?", "cat": "Selamlaşma"}, {"nl": "Ik woon in Amsterdam.", "tr": "Amsterdam'da oturuyorum.", "cat": "Selamlaşma"}, {"nl": "Tot straks! / Tot zo!", "tr": "Sonra görüşürüz! / Az sonra görüşürüz!", "cat": "Selamlaşma"}, {"nl": "Fijne dag nog!", "tr": "İyi günler dilerim!", "cat": "Selamlaşma"}, {"nl": "Ja.", "tr": "Evet.", "cat": "İletişim"}, {"nl": "Nee.", "tr": "Hayır.", "cat": "İletişim"}, {"nl": "Ik weet het niet.", "tr": "Bilmiyorum.", "cat": "İletişim"}, {"nl": "Geen idee.", "tr": "Hiçbir fikrim yok.", "cat": "İletişim"}, {"nl": "Ik begrijp het.", "tr": "Anlıyorum.", "cat": "İletişim"}, {"nl": "Ik begrijp het niet.", "tr": "Bunu anlamıyorum.", "cat": "İletişim"}, {"nl": "Spreekt u Turks / Engels?", "tr": "Türkçe / İngilizce konuşuyor musunuz?", "cat": "İletişim"}, {"nl": "Spreek je Engels?", "tr": "İngilizce konuşuyor musun?", "cat": "İletişim"}, {"nl": "Ik spreek maar een beetje Nederlands.", "tr": "Sadece biraz Hollandaca konuşuyorum.", "cat": "İletişim"}, {"nl": "Kunt u dat herhalen, alstublieft?", "tr": "Bunu tekrar edebilir misiniz lütfen?", "cat": "İletişim"}, {"nl": "Iets langzamer, alstublieft.", "tr": "Lütfen daha yavaş.", "cat": "İletişim"}, {"nl": "Wat zeg je? / Hoe bedoel je?", "tr": "Efendim? / Nasıl yani?", "cat": "İletişim"}, {"nl": "Wat betekent dat?", "tr": "Bu ne anlama geliyor?", "cat": "İletişim"}, {"nl": "Hoe zeg je ... in het Nederlands?", "tr": "Hollandacada ... nasıl denir?", "cat": "İletişim"}, {"nl": "Ik heb een vraag.", "tr": "Bir sorum var.", "cat": "İletişim"}, {"nl": "Geen probleem!", "tr": "Problem değil! / Sorun yok!", "cat": "İletişim"}, {"nl": "Helemaal goed. / Komt goed.", "tr": "Tamamdır. / Halledilir.", "cat": "İletişim"}, {"nl": "Maakt niet uit.", "tr": "Önemli değil. / Zararı yok.", "cat": "İletişim"}, {"nl": "Klopt! / Precies!", "tr": "Aynen öyle! / Kesinlikle!", "cat": "İletişim"}, {"nl": "Dat is waar.", "tr": "Doğru. / Haklısın.", "cat": "İletişim"}, {"nl": "Misschien.", "tr": "Belki.", "cat": "İletişim"}, {"nl": "Zeker.", "tr": "Kesinlikle / Elbette.", "cat": "İletişim"}, {"nl": "Ik ben moe.", "tr": "Yorgunum.", "cat": "İletişim"}, {"nl": "Ik heb honger.", "tr": "Karnım aç.", "cat": "İletişim"}, {"nl": "Ik heb dorst.", "tr": "Susadım.", "cat": "İletişim"}, {"nl": "Een koffie, alsjeblieft.", "tr": "Bir kahve, lütfen.", "cat": "Alışveriş"}, {"nl": "Wat kost dit?", "tr": "Bu ne kadar?", "cat": "Alışveriş"}, {"nl": "Hoeveel is het?", "tr": "Bunun fiyatı ne kadar?", "cat": "Alışveriş"}, {"nl": "De rekening, alstublieft.", "tr": "Hesap lütfen.", "cat": "Alışveriş"}, {"nl": "Kan ik contant betalen?", "tr": "Nakit ödeyebilir miyim?", "cat": "Alışveriş"}, {"nl": "Kan ik pinnen?", "tr": "Kartla ödeyebilir miyim?", "cat": "Alışveriş"}, {"nl": "Dat is dan 15 euro.", "tr": "Toplam 15 Euro yapıyor.", "cat": "Alışveriş"}, {"nl": "Laat maar zitten.", "tr": "Üstü kalsın.", "cat": "Alışveriş"}, {"nl": "Heeft u ... ?", "tr": "Sizde ... var mı?", "cat": "Alışveriş"}, {"nl": "Eet smakelijk!", "tr": "Afiyet olsun!", "cat": "Alışveriş"}, {"nl": "Proost!", "tr": "Şerefe!", "cat": "Alışveriş"}, {"nl": "Dat smaakt lekker! / Lekker!", "tr": "Tadı çok lezzetli!", "cat": "Alışveriş"}, {"nl": "Ik zoek ...", "tr": "... arıyorum.", "cat": "Alışveriş"}, {"nl": "Waar is de kassa?", "tr": "Kasa nerede?", "cat": "Alışveriş"}, {"nl": "Bonnetje erbij?", "tr": "Fiş ister misiniz?", "cat": "Alışveriş"}, {"nl": "Nee, dank je.", "tr": "Hayır, teşekkürler.", "cat": "Alışveriş"}, {"nl": "Ik kijk gewoon even, dank u.", "tr": "Sadece bakıyorum, teşekkürler.", "cat": "Alışveriş"}, {"nl": "Heeft u deze ook in maat M?", "tr": "Bunun M bedeni var mı?", "cat": "Alışveriş"}, {"nl": "Is er hier een restaurant in de buurt?", "tr": "Yakınlarda bir restoran var mı?", "cat": "Alışveriş"}, {"nl": "Een bier, alsjeblieft.", "tr": "Bir bira lütfen.", "cat": "Alışveriş"}, {"nl": "Nog eentje, alsjeblieft.", "tr": "Bir tane daha lütfen.", "cat": "Alışveriş"}, {"nl": "Water, alsjeblieft.", "tr": "Su lütfen.", "cat": "Alışveriş"}, {"nl": "Het is te duur.", "tr": "Bu çok pahalı.", "cat": "Alışveriş"}, {"nl": "Dat is goedkoop.", "tr": "Bu ucuz.", "cat": "Alışveriş"}, {"nl": "Waar kun je hier lekker eten?", "tr": "Burada nerede güzel yemek yenir?", "cat": "Alışveriş"}, {"nl": "Waar is ... ?", "tr": "... nerede?", "cat": "Yön & Ulaşım"}, {"nl": "Waar is de wc, alstublieft?", "tr": "Tuvalet nerede acaba?", "cat": "Yön & Ulaşım"}, {"nl": "Waar is het station?", "tr": "Tren istasyonu nerede?", "cat": "Yön & Ulaşım"}, {"nl": "Rechtdoor.", "tr": "Düz gidin.", "cat": "Yön & Ulaşım"}, {"nl": "Naar links.", "tr": "Sola.", "cat": "Yön & Ulaşım"}, {"nl": "Naar rechts.", "tr": "Sağa.", "cat": "Yön & Ulaşım"}, {"nl": "Ik ben verdwaald.", "tr": "Kayboldum.", "cat": "Yön & Ulaşım"}, {"nl": "Kunt u mij helpen?", "tr": "Bana yardım edebilir misiniz?", "cat": "Yön & Ulaşım"}, {"nl": "Waar kan ik een kaartje kopen?", "tr": "Nereden bilet satın alabilirim?", "cat": "Yön & Ulaşım"}, {"nl": "Gaat deze bus naar ... ?", "tr": "Bu otobüs ...'ye gider mi?", "cat": "Yön & Ulaşım"}, {"nl": "Hoe laat vertrekt de trein?", "tr": "Tren ne zaman kalkıyor?", "cat": "Yön & Ulaşım"}, {"nl": "Hoe laat is het?", "tr": "Saat kaç?", "cat": "Yön & Ulaşım"}, {"nl": "Het is één uur.", "tr": "Saat bir.", "cat": "Yön & Ulaşım"}, {"nl": "Wat doe je vandaag?", "tr": "Bugün ne yapıyorsun?", "cat": "Yön & Ulaşım"}, {"nl": "Ik ga naar huis.", "tr": "Eve gidiyorum.", "cat": "Yön & Ulaşım"}, {"nl": "Ik ben thuis.", "tr": "Evdeyim.", "cat": "Yön & Ulaşım"}, {"nl": "Hoe laat spreken we af?", "tr": "Ne zaman/saat kaçta buluşuyoruz?", "cat": "Yön & Ulaşım"}, {"nl": "Om hoe laat?", "tr": "Saat kaçta?", "cat": "Yön & Ulaşım"}, {"nl": "Waar ben je?", "tr": "Neredesin?", "cat": "Yön & Ulaşım"}, {"nl": "Ik ben onderweg.", "tr": "Yoldayım / Geliyorum.", "cat": "Yön & Ulaşım"}, {"nl": "Ik kom eraan.", "tr": "Hemen geliyorum / Yaklaştım.", "cat": "Yön & Ulaşım"}, {"nl": "Sorry, ik ben te laat.", "tr": "Üzgünüm, geciktim.", "cat": "Yön & Ulaşım"}, {"nl": "Hoe is het weer?", "tr": "Hava nasıl?", "cat": "Yön & Ulaşım"}, {"nl": "Het regent.", "tr": "Yağmur yağıyor.", "cat": "Yön & Ulaşım"}, {"nl": "De zon schijnt.", "tr": "Güneş açıyor / parlıyor.", "cat": "Yön & Ulaşım"}, {"nl": "Ik heb het koud.", "tr": "Üşüyorum.", "cat": "Duygular"}, {"nl": "Ik heb het warm.", "tr": "Bunaldım / Bana sıcak bastı.", "cat": "Duygular"}, {"nl": "Ik ben chagrijnig.", "tr": "Keyfim kaçık / Huysuzum.", "cat": "Duygular"}, {"nl": "Ik ben vrolijk. / Ik ben in een goed humeur.", "tr": "Neşeliyim / Keyfim yerinde.", "cat": "Duygular"}, {"nl": "Ik heb een goed humeur.", "tr": "Keyfim yerinde.", "cat": "Duygular"}, {"nl": "Ik heb een slecht humeur.", "tr": "Moralim bozuk / Keyifsizim.", "cat": "Duygular"}, {"nl": "Ik heb hoofdpijn.", "tr": "Başım ağrıyor.", "cat": "Duygular"}, {"nl": "Ik ben verkouden.", "tr": "Üşüttüm / Nezleyim.", "cat": "Duygular"}, {"nl": "Ik voel me niet zo lekker.", "tr": "Kendimi iyi hissetmiyorum.", "cat": "Duygular"}, {"nl": "Beterschap!", "tr": "Geçmiş olsun!", "cat": "Duygular"}, {"nl": "Goddank!", "tr": "Çok şükür!", "cat": "Duygular"}, {"nl": "Jammer!", "tr": "Yazık! / Tüh!", "cat": "Duygular"}, {"nl": "Echt? / Serieus?", "tr": "Harbi mi? / Gerçekten mi?", "cat": "Duygular"}, {"nl": "Dat maakt me niet uit.", "tr": "Bu benim için fark etmez / Umrumda değil.", "cat": "Duygular"}, {"nl": "Dat is belangrijk voor mij.", "tr": "Bu benim için önemli.", "cat": "Duygular"}, {"nl": "Ik heb geen zin.", "tr": "Hiç canım istemiyor / Hevesim yok.", "cat": "Duygular"}, {"nl": "Ik heb geen tijd.", "tr": "Zamanım yok.", "cat": "Duygular"}, {"nl": "Ik heb stress. / Ik heb het druk.", "tr": "Stresliyim / Yoğunum.", "cat": "Duygular"}, {"nl": "Maak je geen zorgen!", "tr": "Endişelenme! / Merak etme!", "cat": "Duygular"}, {"nl": "Geen paniek!", "tr": "Panik yok!", "cat": "Duygular"}, {"nl": "Rustig maar.", "tr": "Sakin ol.", "cat": "Duygular"}, {"nl": "Ik ben bang.", "tr": "Korkuyorum.", "cat": "Duygular"}, {"nl": "Dat vind ik leuk. / Fijn!", "tr": "Buna sevindim. / Güzel!", "cat": "Duygular"}, {"nl": "Dat is geweldig!", "tr": "Bu harika!", "cat": "Duygular"}, {"nl": "Dat is prachtig!", "tr": "Bu mükemmel!", "cat": "Duygular"}, {"nl": "Heb je vandaag tijd?", "tr": "Bugün zamanın var mı?", "cat": "Randevu"}, {"nl": "Heb je plannen voor het weekend?", "tr": "Hafta sonu bir planın var mı?", "cat": "Randevu"}, {"nl": "Zullen we afspreken?", "tr": "Buluşalım mı?", "cat": "Randevu"}, {"nl": "Zullen we gaan wandelen?", "tr": "Yürüyüşe çıkalım mı?", "cat": "Randevu"}, {"nl": "Laten we een bakkie gaan doen.", "tr": "Hadi bir kahve içmeye gidelim.", "cat": "Randevu"}, {"nl": "Waar spreken we af?", "tr": "Nerede buluşuyoruz?", "cat": "Randevu"}, {"nl": "Schikt het morgen? / Komt het morgen uit?", "tr": "Yarın sana uyar mı?", "cat": "Randevu"}, {"nl": "Ja, dat komt goed uit.", "tr": "Evet, bu bana uyar.", "cat": "Randevu"}, {"nl": "Nee, dan kan ik helaas niet.", "tr": "Hayır, o zaman gelemem maalesef.", "cat": "Randevu"}, {"nl": "Ga je mee?", "tr": "Benimle geliyor musun? / Bize katılıyor musun?", "cat": "Randevu"}, {"nl": "Ik trakteer.", "tr": "Benden olsun / Seni davet ediyorum (Hesabı öderken).", "cat": "Randevu"}, {"nl": "Wat doe je in je vrije tijd?", "tr": "Boş zamanlarında ne yaparsın?", "cat": "Randevu"}, {"nl": "Ik spreek af met vrienden.", "tr": "Arkadaşlarımla buluşuyorum.", "cat": "Randevu"}, {"nl": "Ik blijf vandaag thuis.", "tr": "Bugün evde kalıyorum.", "cat": "Randevu"}, {"nl": "Bel me!", "tr": "Beni ara!", "cat": "Randevu"}, {"nl": "Stuur me een berichtje.", "tr": "Bana mesaj yaz.", "cat": "Randevu"}, {"nl": "Ik stuur je de locatie.", "tr": "Sana konum atıyorum.", "cat": "Randevu"}, {"nl": "Tot zo!", "tr": "Az sonra görüşürüz!", "cat": "Randevu"}, {"nl": "Tot morgen!", "tr": "Yarına kadar görüşmek üzere!", "cat": "Randevu"}, {"nl": "Veel plezier!", "tr": "İyi eğlenceler!", "cat": "Randevu"}, {"nl": "Fijn weekend!", "tr": "İyi hafta sonları!", "cat": "Randevu"}, {"nl": "Insgelijks! / Jij ook, bedankt!", "tr": "Sana da! / Teşekkürler, size de!", "cat": "Randevu"}, {"nl": "Ik moet nu gaan.", "tr": "Şimdi gitmem gerekiyor.", "cat": "Randevu"}, {"nl": "Kom goed thuis!", "tr": "Eve iyi var! / Sağ salim git!", "cat": "Randevu"}, {"nl": "Ik ben goed aangekomen.", "tr": "Sağ salim vardım.", "cat": "Randevu"}, {"nl": "Wat voor werk doe je?", "tr": "Mesleğin ne?", "cat": "İşyeri"}, {"nl": "Ik werk als ...", "tr": "... olarak çalışıyorum.", "cat": "İşyeri"}, {"nl": "Ik studeer nog.", "tr": "Henüz öğrenciyim.", "cat": "İşyeri"}, {"nl": "Ik ben klaar met werken!", "tr": "Mesaim bitti! / İşten çıktım.", "cat": "İşyeri"}, {"nl": "Waar werk je?", "tr": "Nerede çalışıyorsun?", "cat": "İşyeri"}, {"nl": "Heb je broers of zussen?", "tr": "Kardeşin var mı?", "cat": "İşyeri"}, {"nl": "Ik heb een broer en een zus.", "tr": "Bir erkek, bir de kız kardeşim var.", "cat": "İşyeri"}, {"nl": "Ik ben enig kind.", "tr": "Tek çocuğum.", "cat": "İşyeri"}, {"nl": "Ben je getrouwd?", "tr": "Evli misin?", "cat": "İşyeri"}, {"nl": "Ik ben vrijgezel.", "tr": "Bekarım.", "cat": "İşyeri"}, {"nl": "Ik heb een vriendin / een vriend.", "tr": "Sevgilim var.", "cat": "İşyeri"}, {"nl": "Ik woon in een studentenhuis.", "tr": "Öğrenci evinde / paylaşımlı evde kalıyorum.", "cat": "İşyeri"}, {"nl": "Ik moet het huis opruimen.", "tr": "Evi toplamam/temizlemem lazım.", "cat": "İşyeri"}, {"nl": "Ik doe de was.", "tr": "Çamaşırları yıkıyorum.", "cat": "İşyeri"}, {"nl": "Ik moet boodschappen doen.", "tr": "Mutfak alışverişine gitmem lazım.", "cat": "İşyeri"}, {"nl": "Kook jij vandaag?", "tr": "Bugün yemeği sen mi yapıyorsun?", "cat": "İşyeri"}, {"nl": "Het eten is klaar!", "tr": "Yemek hazır!", "cat": "İşyeri"}, {"nl": "Ik ga naar bed.", "tr": "Yatağa gidiyorum / yatıyorum.", "cat": "İşyeri"}, {"nl": "Welterusten! / Goedenacht!", "tr": "İyi geceler!", "cat": "İşyeri"}, {"nl": "Slaap lekker!", "tr": "İyi uykular!", "cat": "İşyeri"}, {"nl": "Droom zoet!", "tr": "Tatlı rüyalar!", "cat": "İşyeri"}, {"nl": "Ik sta 's ochtends om 7 uur op.", "tr": "Sabahları saat 7'de kalkarım.", "cat": "İşyeri"}, {"nl": "Ik poets mijn tanden.", "tr": "Dişlerimi fırçalıyorum.", "cat": "İşyeri"}, {"nl": "Ik neem een douche.", "tr": "Duş alıyorum.", "cat": "İşyeri"}, {"nl": "Ik kleed me aan.", "tr": "Üstümü giyiniyorum.", "cat": "İşyeri"}, {"nl": "Hallo, met wie spreek ich?", "tr": "Alo, kiminle görüşüyorum?", "cat": "Teknoloji"}, {"nl": "Met ...", "tr": "Ben ...", "cat": "Teknoloji"}, {"nl": "Kun je me horen?", "tr": "Beni duyabiliyor musun?", "cat": "Teknoloji"}, {"nl": "De verbinding is slecht.", "tr": "Bağlantı kötü / hat zayıf.", "cat": "Teknoloji"}, {"nl": "Mijn batterij is bijna leeg.", "tr": "Şarjım bitmek üzere.", "cat": "Teknoloji"}, {"nl": "Ik bel je zo terug.", "tr": "Seni sonra geri arayacağım.", "cat": "Teknoloji"}, {"nl": "Ik had je berichtje niet gezien.", "tr": "Mesajını görmemişim.", "cat": "Teknoloji"}, {"nl": "Wat is het wifi-wachtwoord?", "tr": "Wi-Fi şifresi ne?", "cat": "Teknoloji"}, {"nl": "Ik heb geen bereik.", "tr": "Telefonum çekmiyor / Şebeke yok.", "cat": "Teknoloji"}, {"nl": "App me dat even.", "tr": "Bunu bana WhatsApp'tan gönder.", "cat": "Teknoloji"}, {"nl": "Ik ben online.", "tr": "Çevrimiçiyim.", "cat": "Teknoloji"}, {"nl": "Heb je Instagram?", "tr": "Instagram'ın var mı?", "cat": "Teknoloji"}, {"nl": "Volg mij.", "tr": "Beni takip et.", "cat": "Teknoloji"}, {"nl": "Ik ben het vergeten.", "tr": "Bunu unuttum.", "cat": "Teknoloji"}, {"nl": "Dat wist ik niet.", "tr": "Bunu bilmiyordum.", "cat": "Teknoloji"}, {"nl": "Ik kan het me niet herinneren.", "tr": "Hatırlamıyorum.", "cat": "Teknoloji"}, {"nl": "Doe het licht aan, alstublieft.", "tr": "Işığı aç lütfen.", "cat": "Teknoloji"}, {"nl": "Doe het licht uit, alstublieft.", "tr": "Işığı kapat lütfen.", "cat": "Teknoloji"}, {"nl": "Het is te hard. / Te veel lawaai.", "tr": "Çok gürültülü.", "cat": "Teknoloji"}, {"nl": "Kan het iets zachter, alstublieft?", "tr": "Sesi kısabilir misin lütfen?", "cat": "Teknoloji"}, {"nl": "Ik ben bezig.", "tr": "Meşgulüm.", "cat": "Teknoloji"}, {"nl": "Laat me met rust.", "tr": "Beni rahat bırak.", "cat": "Teknoloji"}, {"nl": "Luister naar mij!", "tr": "Beni dinle!", "cat": "Teknoloji"}, {"nl": "Kijk eens!", "tr": "Bak hele! / Şuna bak!", "cat": "Teknoloji"}, {"nl": "Laat maar zitten! / Vergeet het maar!", "tr": "Unut gitsin! / Boşver!", "cat": "Teknoloji"}, {"nl": "Ik geloof van wel.", "tr": "Bence de öyle. / Öyle inanıyorum.", "cat": "Köprü Kelimeler"}, {"nl": "Ik geloof van niet.", "tr": "Hiç sanmıyorum. / İnanmıyorum.", "cat": "Köprü Kelimeler"}, {"nl": "Ik denk dat...", "tr": "Bence... / Şöyle olduğunu düşünüyorum...", "cat": "Köprü Kelimeler"}, {"nl": "Naar mijn mening... / Volgens mij...", "tr": "Benim fikrime göre... / Bence...", "cat": "Köprü Kelimeler"}, {"nl": "Dat maakt me niet uit.", "tr": "Benim için fark etmez. / Bana uyar.", "cat": "Köprü Kelimeler"}, {"nl": "Dat hangt ervan af.", "tr": "Duruma göre değişir. / Duruma bağlı.", "cat": "Köprü Kelimeler"}, {"nl": "Ik weet het niet zeker.", "tr": "Emin değilim.", "cat": "Köprü Kelimeler"}, {"nl": "Dat klopt niet.", "tr": "Bu doğru değil.", "cat": "Köprü Kelimeler"}, {"nl": "Dat is een kwestie van smaak.", "tr": "Bu bir zevk meselesi.", "cat": "Köprü Kelimeler"}, {"nl": "Ik vind het saai.", "tr": "Bunu sıkıcı buluyorum.", "cat": "Köprü Kelimeler"}, {"nl": "Ik vind het interessant.", "tr": "Bunu ilginç buluyorum.", "cat": "Köprü Kelimeler"}, {"nl": "Dat is een goed idee!", "tr": "Bu iyi bir fikir!", "cat": "Köprü Kelimeler"}, {"nl": "Wat een onzin!", "tr": "Bu saçmalık!", "cat": "Köprü Kelimeler"}, {"nl": "Dat vind ik leuk. / Dat bevalt me.", "tr": "Bu hoşuma gidiyor. / Bunu beğendim.", "cat": "Köprü Kelimeler"}, {"nl": "Dat vind ik helemaal niks.", "tr": "Bu hiç hoşuma gitmedi.", "cat": "Köprü Kelimeler"}, {"nl": "Ik hou hiervan. / Ik vind dit leuk.", "tr": "Bunu seviyorum.", "cat": "Köprü Kelimeler"}, {"nl": "Ik vind dit niet leuk.", "tr": "Bunu sevmiyorum.", "cat": "Köprü Kelimeler"}, {"nl": "Ik drink liever thee dan koffie.", "tr": "Kahvedense çayı tercih ederim.", "cat": "Köprü Kelimeler"}, {"nl": "Wat vind jij? / Wat denk je?", "tr": "Sen ne diyorsun? / Senin fikrin ne?", "cat": "Köprü Kelimeler"}, {"nl": "Ben je het ermee eens?", "tr": "Katılıyor musun? / Kabul ediyor musun?", "cat": "Köprü Kelimeler"}, {"nl": "Ik ga ermee akkoord.", "tr": "Bunu kabul ediyorum. / Bana uyar.", "cat": "Köprü Kelimeler"}, {"nl": "Geen sprake van! / Echt niet!", "tr": "Asla! / Hiçbir şekilde olmaz!", "cat": "Köprü Kelimeler"}, {"nl": "Sowieso! / Zeker weten!", "tr": "Kesinlikle! / Her halükarda!", "cat": "Köprü Kelimeler"}, {"nl": "Het ligt eraan.", "tr": "Bakalım, duruma göre.", "cat": "Köprü Kelimeler"}, {"nl": "Dat is niet echt mijn ding.", "tr": "Bu bana göre değil. / Tarzım değil.", "cat": "Köprü Kelimeler"}, {"nl": "Goede reis!", "tr": "İyi yolculuklar!", "cat": "Seyahat"}, {"nl": "Fijne vakantie!", "tr": "İyi tatiller!", "cat": "Seyahat"}, {"nl": "Ik ga met de auto.", "tr": "Arabayla gidiyorum.", "cat": "Seyahat"}, {"nl": "Ik ga met de metro.", "tr": "Metroyla gidiyorum.", "cat": "Seyahat"}, {"nl": "Ik ga te voet.", "tr": "Yürüyerek gidiyorum.", "cat": "Seyahat"}, {"nl": "De trein heeft vertraging.", "tr": "Tren rötar yaptı.", "cat": "Seyahat"}, {"nl": "Ik sta in de file.", "tr": "Trafikte kaldım / Trafikte bekliyorum.", "cat": "Seyahat"}, {"nl": "Waar kan ik parkeren?", "tr": "Nereye park edebilirim?", "cat": "Seyahat"}, {"nl": "Is deze plek nog vrij?", "tr": "Bu yer boş mu?", "cat": "Seyahat"}, {"nl": "Ik moet overstappen.", "tr": "Aktarma yapmam gerekiyor.", "cat": "Seyahat"}, {"nl": "Stop hier maar, alstublieft.", "tr": "Burada dur lütfen.", "cat": "Seyahat"}, {"nl": "Ik ben op vakantie.", "tr": "Tatil yapıyorum / Tatildeyim.", "cat": "Seyahat"}, {"nl": "Ik vlieg naar Istanbul.", "tr": "İstanbul'a uçuyorum.", "cat": "Seyahat"}, {"nl": "Waar is mijn koffer?", "tr": "Bavulum nerede?", "cat": "Seyahat"}, {"nl": "Ik ben mijn kaartje kwijt.", "tr": "Biletimi kaybettim.", "cat": "Seyahat"}, {"nl": "Hoe lang duurt de reis?", "tr": "Yolculuk ne kadar sürüyor?", "cat": "Seyahat"}, {"nl": "Het duurt ongeveer een uur.", "tr": "Yaklaşık bir saat sürüyor.", "cat": "Seyahat"}, {"nl": "Ik ben er zo.", "tr": "Neredeyse geldim / eli kulağında.", "cat": "Seyahat"}, {"nl": "Waar is de uitgang?", "tr": "Çıkış nerede?", "cat": "Seyahat"}, {"nl": "Waar is de ingang?", "tr": "Giriş nerede?", "cat": "Seyahat"}, {"nl": "Volgende halte, alstublieft.", "tr": "Gelecek durakta lütfen.", "cat": "Seyahat"}, {"nl": "Eentje retour, alstublieft.", "tr": "Gidiş-dönüş lütfen (Bilet alırken).", "cat": "Seyahat"}, {"nl": "Alleen een enkeltje, alstublieft.", "tr": "Sadece gidiş lütfen.", "cat": "Seyahat"}, {"nl": "Is er hier een tankstation in de buurt?", "tr": "Yakınlarda bir benzinlik var mı?", "cat": "Seyahat"}, {"nl": "Ik moet tanken.", "tr": "Benzin almam/yakıt doldurmam lazım.", "cat": "Seyahat"}, {"nl": "Ik ben ziek.", "tr": "Hastayım.", "cat": "İnce Çakıl"}, {"nl": "Ik moet naar de dokter.", "tr": "Doktora gitmem gerekiyor.", "cat": "İnce Çakıl"}, {"nl": "Ik moet een afspraak maken.", "tr": "Randevuya ihtiyacım var.", "cat": "İnce Çakıl"}, {"nl": "Ik heb koorts.", "tr": "Ateşim var.", "cat": "İnce Çakıl"}, {"nl": "Ik ben misselijk.", "tr": "Midem bulanıyor.", "cat": "İnce Çakıl"}, {"nl": "Ik heb buikpijn.", "tr": "Karnım ağrıyor.", "cat": "İnce Çakıl"}, {"nl": "Ik heb rugpijn.", "tr": "Sırtım/belim ağrıyor.", "cat": "İnce Çakıl"}, {"nl": "Waar doet het pijn?", "tr": "Neresi ağrıyor?", "cat": "İnce Çakıl"}, {"nl": "Het doet hier pijn.", "tr": "Burası ağrıyor.", "cat": "İnce Çakıl"}, {"nl": "Ik heb medicijnen nodig.", "tr": "İlaca ihtiyacım var.", "cat": "İnce Çakıl"}, {"nl": "Is er hier een apotheek in de buurt?", "tr": "Yakınlarda bir eczane var mı?", "cat": "İnce Çakıl"}, {"nl": "Dit is op recept.", "tr": "Bu reçeteye tabi.", "cat": "İnce Çakıl"}, {"nl": "Ik ben allergisch voor...", "tr": "...'ye karşı alerjim var.", "cat": "İnce Çakıl"}, {"nl": "Ik ben gewond.", "tr": "Yaralıyım.", "cat": "İnce Çakıl"}, {"nl": "Bel een ambulance!", "tr": "Ambulans çağırın!", "cat": "İnce Çakıl"}, {"nl": "Het is een noodgeval!", "tr": "Bu bir acil durum!", "cat": "İnce Çakıl"}, {"nl": "Heeft u pleisters?", "tr": "Yaran bandınız var mı?", "cat": "İnce Çakıl"}, {"nl": "Ik moet uitrusten.", "tr": "Dinlenmem gerekiyor.", "cat": "İnce Çakıl"}, {"nl": "Ik voel me al wat beter.", "tr": "Daha iyi hissediyorum bile.", "cat": "İnce Çakıl"}, {"nl": "Ik ben weer beter.", "tr": "Tekrar iyileştim / sağlıklıyım.", "cat": "İnce Çakıl"}, {"nl": "Moet je hoesten?", "tr": "Öksürüyor musun?", "cat": "İnce Çakıl"}, {"nl": "Ik ben verkouden. / Ik heb een snotneus.", "tr": "Nezlem var / burnum akıyor.", "cat": "İnce Çakıl"}, {"nl": "Ik ben duizelig.", "tr": "Başım dönüyor.", "cat": "İnce Çakıl"}, {"nl": "Neem deze tablet.", "tr": "Bu hapı/tableti al.", "cat": "İnce Çakıl"}, {"nl": "Twee keer per dag.", "tr": "Günde iki defa.", "cat": "İnce Çakıl"}, {"nl": "Gefeliciteerd met je verjaardag!", "tr": "Doğum günün kutlu olsun!", "cat": "Melankoli"}, {"nl": "Al het goede!", "tr": "En iyi dileklerimle!", "cat": "Melankoli"}, {"nl": "Fijne kerstdagen!", "tr": "Mutlu Noeller!", "cat": "Melankoli"}, {"nl": "Gelukkig nieuwjaar!", "tr": "Mutlu yıllar!", "cat": "Melankoli"}, {"nl": "Fijne feestdagen!", "tr": "İyi bayramlar!", "cat": "Melankoli"}, {"nl": "Van harte gefeliciteerd!", "tr": "Gönülden tebrik ederim!", "cat": "Melankoli"}, {"nl": "Veel succes!", "tr": "Başarılar dilerim!", "cat": "Melankoli"}, {"nl": "Veel geluk!", "tr": "Bol şans!", "cat": "Melankoli"}, {"nl": "Je kunt het!", "tr": "Bunu başarırsın! / Yapabilirsin!", "cat": "Melankoli"}, {"nl": "Ik zal voor je duimen!", "tr": "Başarılar! / Şansın yaver gitsin diye parmaklarımı çaprazlayacağım.", "cat": "Melankoli"}, {"nl": "Dat was per ongeluk.", "tr": "Yanlışlıkla oldu.", "cat": "Melankoli"}, {"nl": "Dat was met opzet.", "tr": "Bilerek/kasten yapıldı.", "cat": "Melankoli"}, {"nl": "Kijk eens!", "tr": "Baksana bir!", "cat": "Melankoli"}, {"nl": "Kom binnen!", "tr": "İçeri gel!", "cat": "Melankoli"}, {"nl": "Ga lekker zitten.", "tr": "Otur lütfen / Yer gösterirken.", "cat": "Melankoli"}, {"nl": "Maak het jezelf comfortabel.", "tr": "Rahatına bak.", "cat": "Melankoli"}, {"nl": "Wil je iets drinken?", "tr": "Bir şeyler içmek ister misin?", "cat": "Melankoli"}, {"nl": "Tast toe! / Pak wat sen wilt.", "tr": "Kendine ikram et, çekinme (Sofrada).", "cat": "Melankoli"}, {"nl": "Het was erg gezellig vandaag.", "tr": "Bugün çok güzeldi/keyifliydi.", "cat": "Melankoli"}, {"nl": "Bedankt voor de uitnodiging.", "tr": "Davet için çok teşekkür ederim.", "cat": "Melankoli"}, {"nl": "Kom snel weer eens langs!", "tr": "Yakında yine gel!", "cat": "Melankoli"}, {"nl": "Ik moet opschieten.", "tr": "Acele etmem lazım.", "cat": "Melankoli"}, {"nl": "Doe rustig aan.", "tr": "Acele etme, zamanın var.", "cat": "Melankoli"}, {"nl": "Ik ben aan de late kant.", "tr": "Geç kaldım / Yetişmem lazım.", "cat": "Melankoli"}, {"nl": "Dat is genoeg!", "tr": "Bu kadar yeter!", "cat": "Melankoli"}, {"nl": "Mag ik er even langs?", "tr": "Geçebilir miyim?", "cat": "Sınır Çizme"}, {"nl": "Kunt u mij een plezier doen?", "tr": "Bana bir iyilik yapabilir misiniz?", "cat": "Sınır Çizme"}, {"nl": "Mag ik hier zitten?", "tr": "Buraya oturabilir miyim?", "cat": "Sınır Çizme"}, {"nl": "Mag ik heel even storen?", "tr": "Çok kısa rahatsız edebilir miyim?", "cat": "Sınır Çizme"}, {"nl": "Heeft u een momentje?", "tr": "Bir dakikanız var mı?", "cat": "Sınır Çizme"}, {"nl": "Kunt u dit even vasthouden, alstublieft?", "tr": "Bunu tutabilir misiniz lütfen?", "cat": "Sınır Çizme"}, {"nl": "Mag ik je telefoon gebruiken?", "tr": "Telefonunu kullanabilir miyim?", "cat": "Sınır Çizme"}, {"nl": "Kunt u mij de weg wijzen?", "tr": "Bana yolu gösterebilir misiniz?", "cat": "Sınır Çizme"}, {"nl": "Doe geen moeite.", "tr": "Kendinizi zahmete sokmayın.", "cat": "Sınır Çizme"}, {"nl": "Is er hier een postkantoor in de buurt?", "tr": "Yakınlarda bir postane var mı?", "cat": "Sınır Çizme"}, {"nl": "Is er hier bir geldautomaat?", "tr": "Yakınlarda bir ATM var mı?", "cat": "Sınır Çizme"}, {"nl": "Waar kan ik dit afgeven?", "tr": "Bunu nereye teslim edebilirim?", "cat": "Sınır Çizme"}, {"nl": "Ik heb uw handtekening nodig.", "tr": "İmzanıza ihtiyacım var.", "cat": "Sınır Çizme"}, {"nl": "Hier tekenen, alstublieft.", "tr": "Lütfen burayı imzalayın.", "cat": "Sınır Çizme"}, {"nl": "Dat is niet nodig.", "tr": "Buna gerek yok.", "cat": "Sınır Çizme"}, {"nl": "Heeft u wisselgeld?", "tr": "Bozuk paranız var mı?", "cat": "Sınır Çizme"}, {"nl": "Ik heb geen kleingeld.", "tr": "Yanımda bozuk para yok.", "cat": "Sınır Çizme"}, {"nl": "Kunt u dit wisselen?", "tr": "Bunu bozabilir misiniz?", "cat": "Sınır Çizme"}, {"nl": "Ik ben zo klaar.", "tr": "Hemen bitiriyorum / Az kaldı.", "cat": "Sınır Çizme"}, {"nl": "Een momentje, alstublieft.", "tr": "Lütfen bir dakika bekleyin.", "cat": "Sınır Çizme"}, {"nl": "Ik moet even bellen.", "tr": "Kısa bir telefon görüşmesi yapmam lazım.", "cat": "Sınır Çizme"}, {"nl": "Ik ben zo terug.", "tr": "Hemen döneceğim.", "cat": "Sınır Çizme"}, {"nl": "Gaat u zitten, alstublieft.", "tr": "Oturun lütfen (Resmi).", "cat": "Sınır Çizme"}, {"nl": "Pak wat je wilt.", "tr": "Ne isterseniz alın.", "cat": "Sınır Çizme"}, {"nl": "Mag ik binnenkomen?", "tr": "İçeri girebilir miyim?", "cat": "Sınır Çizme"}, {"nl": "Trouwens...", "tr": "Bu arada... / Sırası gelmişken...", "cat": "Şikayet"}, {"nl": "Eigenlijk...", "tr": "Aslında...", "cat": "Şikayet"}, {"nl": "Nou ja, het gaat.", "tr": "Yani, işte, idare eder.", "cat": "Şikayet"}, {"nl": "We zullen zien. / Afwachten.", "tr": "Bakalım. / Göreceğiz.", "cat": "Şikayet"}, {"nl": "Zoals ik al zei...", "tr": "Dediğim gibi...", "cat": "Şikayet"}, {"nl": "Sowieso.", "tr": "Her halükarda / Kesinlikle.", "cat": "Şikayet"}, {"nl": "Echt niet! / Absoluut niet.", "tr": "Asla / Hiçbir şekilde.", "cat": "Şikayet"}, {"nl": "Dat klinkt logisch. / Dat is logisch.", "tr": "Mantıklı.", "cat": "Şikayet"}, {"nl": "Dat slaat nergens op.", "tr": "Hiç mantıklı değil. / Saçma.", "cat": "Şikayet"}, {"nl": "Ik heb me vergist.", "tr": "Yanlış görmüşüm/yanılmışım.", "cat": "Şikayet"}, {"nl": "Dat zou kunnen.", "tr": "Olabilir. / İhtimal dahilinde.", "cat": "Şikayet"}, {"nl": "Dat kan niet waar zijn!", "tr": "Olamaz! / Yok artık!", "cat": "Şikayet"}, {"nl": "Weet je het zeker?", "tr": "Emin misin?", "cat": "Şikayet"}, {"nl": "Heel zeker.", "tr": "Tamamen eminim.", "cat": "Şikayet"}, {"nl": "Ik weet het niet zeker.", "tr": "Emin değilim.", "cat": "Şikayet"}, {"nl": "Sorry, dat wist ik niet.", "tr": "Üzgünüm, bunu bilmiyordum.", "cat": "Şikayet"}, {"nl": "Dat is nieuw voor mij.", "tr": "Bunu ilk defa duyuyorum.", "cat": "Şikayet"}, {"nl": "Geen wonder!", "tr": "Şaşılacak bir şey yok! / Çok normal!", "cat": "Şikayet"}, {"nl": "Trek het je tidak aan!", "tr": "Takma kafana! / Boşver!", "cat": "Şikayet"}, {"nl": "Het is niet zo erg.", "tr": "O kadar da kötü değil.", "cat": "Şikayet"}, {"nl": "Goddank!", "tr": "Çok şükür!", "cat": "Şikayet"}, {"nl": "C'est la vie. / Zo is het leven.", "tr": "Hayat böyle işte.", "cat": "Şikayet"}, {"nl": "Wie weet?", "tr": "Kim bilir?", "cat": "Şikayet"}, {"nl": "Je weet maar nooit.", "tr": "Hiç belli olmaz. / Asla bilemeyiz.", "cat": "Şikayet"}, {"nl": "We kijken wel.", "tr": "Bakalım, göreceğiz.", "cat": "Şikayet"}, {"nl": "De vuilnisbak moet naar buiten.", "tr": "Çöpün dışarı atılması lazım.", "cat": "Kriz"}, {"nl": "Zet jij het vuilnis buiten?", "tr": "Çöpü dışarı çıkarır mısın?", "cat": "Kriz"}, {"nl": "Ik moet de was ophangen.", "tr": "Çamaşırları asmam lazım.", "cat": "Kriz"}, {"nl": "De koelkast is leeg.", "tr": "Buzdolabı bomboş.", "cat": "Kriz"}, {"nl": "We moeten boodschappen doen.", "tr": "Alışverişe gitmemiz lazım.", "cat": "Kriz"}, {"nl": "Ik doe de afwas.", "tr": "Bulaşıkları ben yıkıyorum.", "cat": "Kriz"}, {"nl": "Waar staat de stofzuiger?", "tr": "Elektrikli süpürge nerede?", "cat": "Kriz"}, {"nl": "Ik moet het huis schoonmaken.", "tr": "Evi temizlemem lazım.", "cat": "Kriz"}, {"nl": "Het pakketje is binnen.", "tr": "Kargo/paket geldi.", "cat": "Kriz"}, {"nl": "Ik heb een pakketje voor de buren aangenomen.", "tr": "Komşu için bir paket teslim aldım.", "cat": "Kriz"}, {"nl": "Gaat de bel?", "tr": "Kapı/zil mi çalıyor?", "cat": "Kriz"}, {"nl": "Wie is er bij de deur?", "tr": "Kapıdaki kim?", "cat": "Kriz"}, {"nl": "Ik doe de deur wel open.", "tr": "Kapıya bakıyorum.", "cat": "Kriz"}, {"nl": "De brievenbus zit vol.", "tr": "Posta kutusu dolu.", "cat": "Kriz"}, {"nl": "Is er post voor mij?", "tr": "Bana posta var mı?", "cat": "Kriz"}, {"nl": "Ik moet de rekening betalen.", "tr": "Faturayı ödemem lazım.", "cat": "Kriz"}, {"nl": "Het licht doet het niet.", "tr": "Işık/lamba çalışmıyor.", "cat": "Kriz"}, {"nl": "De verwarming is koud.", "tr": "Kalorifer soğuk / yanmıyor.", "cat": "Kriz"}, {"nl": "Zet de verwarming aan, alstublieft.", "tr": "Kaloriferi aç lütfen.", "cat": "Kriz"}, {"nl": "Het tocht hier.", "tr": "Cereyan yapıyor / hava esiyor.", "cat": "Kriz"}, {"nl": "Sluit het raam, alstublieft.", "tr": "Pencereyi kapat lütfen.", "cat": "Kriz"}, {"nl": "Doe de deur open, alstublieft.", "tr": "Kapıyı aç lütfen.", "cat": "Kriz"}, {"nl": "Ik ben mijn sleutels vergeten.", "tr": "Anahtarımı unuttum.", "cat": "Kriz"}, {"nl": "Ik heb mezelf buitengesloten.", "tr": "Dışarıda kaldım (Kapı üstüme kapandı).", "cat": "Kriz"}, {"nl": "Waar heb je dat gekocht?", "tr": "Bunu nereden satın aldın?", "cat": "Kriz"}, {"nl": "Hoe laat begint het?", "tr": "Ne zaman başlıyor?", "cat": "Bıkmışlık"}, {"nl": "We gaan beginnen!", "tr": "Başlıyoruz!", "cat": "Bıkmışlık"}, {"nl": "Ik red het niet op tijd.", "tr": "Zamanında yetişemeyeceğim.", "cat": "Bıkmışlık"}, {"nl": "De bus is al weg.", "tr": "Otobüs kaçtı / gitti.", "cat": "Bıkmışlık"}, {"nl": "Ik heb de trein gemist.", "tr": "Treni kaçırdım.", "cat": "Bıkmışlık"}, {"nl": "Ik heb het druk. / Ik heb stress.", "tr": "Stresliyim / Çok yoğunum.", "cat": "Bıkmışlık"}, {"nl": "Kom je eten?", "tr": "Yemeğe geliyor musun?", "cat": "Bıkmışlık"}, {"nl": "Ik heb al gegeten.", "tr": "Ben çoktan yedim.", "cat": "Bıkmışlık"}, {"nl": "Wat schaft de pot?", "tr": "Yemekte ne var?", "cat": "Bıkmışlık"}, {"nl": "Wil je nog wat?", "tr": "Biraz daha ister misin?", "cat": "Bıkmışlık"}, {"nl": "Ik zit vol, dank je.", "tr": "Doydum, teşekkürler.", "cat": "Bıkmışlık"}, {"nl": "Dat was lekker!", "tr": "Lezzetliydi!", "cat": "Bıkmışlık"}, {"nl": "Kunnen we het verzetten?", "tr": "Bunu erteleyebilir miyiz?", "cat": "Bıkmışlık"}, {"nl": "Schikt het volgende week?", "tr": "Gelecek hafta sana uyar mı?", "cat": "Bıkmışlık"}, {"nl": "Kan het ook iets later?", "tr": "Biraz daha geç olsa olur mu?", "cat": "Bıkmışlık"}, {"nl": "Ik heb een afspraak.", "tr": "Randevum var.", "cat": "Bıkmışlık"}, {"nl": "Ik heb vandaag veel te doen.", "tr": "Bugün yapacak çok işim var.", "cat": "Bıkmışlık"}, {"nl": "Ik ben zo klaar.", "tr": "Hemen bitiriyorum.", "cat": "Bıkmışlık"}, {"nl": "Laten we gaan.", "tr": "Hadi gidelim.", "cat": "Bıkmışlık"}, {"nl": "We moeten gaan.", "tr": "Gitmemiz lazım.", "cat": "Bıkmışlık"}, {"nl": "Ga je met me mee?", "tr": "Benimle geliyor musun?", "cat": "Bıkmışlık"}, {"nl": "Ik wacht buiten.", "tr": "Dışarıda bekliyorum.", "cat": "Bıkmışlık"}, {"nl": "Ik wacht op je.", "tr": "Seni bekliyorum.", "cat": "Bıkmışlık"}, {"nl": "Schiet eens op!", "tr": "Biraz acele et!", "cat": "Bıkmışlık"}, {"nl": "Geen haast!", "tr": "Acele yok!", "cat": "Bıkmışlık"}, {"nl": "Het leven is geen ponykamp.", "tr": "Het leven is geen ponykamp.", "cat": "Durum Kurtarma"}, {"nl": "Je moet de slingers zelf ophangen.", "tr": "Hayatı kendin güzelleştirmelisin", "cat": "Durum Kurtarma"}, {"nl": "Dat is mijn bakkie niet.", "tr": "Beni alakadar etmez / Benim dert edeceğim şey değil", "cat": "Durum Kurtarma"}, {"nl": "Hier zakt mijn broek van af!", "tr": "Hier zakt mijn broek van af!", "cat": "Durum Kurtarma"}, {"nl": "Mijn emmer loopt bijna over!", "tr": "Mijn emmer loopt bijna over!", "cat": "Durum Kurtarma"}, {"nl": "Ik heb er tabak van.", "tr": "Burnuma kadar geldi / Bıktım artık", "cat": "Durum Kurtarma"}, {"nl": "Dit werkt op mijn zenuwen.", "tr": "Acayip sinirimi bozuyor", "cat": "Durum Kurtarma"}, {"nl": "Ik ben aan het einde van mijn Latijn.", "tr": "Gücümün sonundayım / Bittim ben", "cat": "Durum Kurtarma"}, {"nl": "Ik heb vandaag echt de lul-kaart getrokken.", "tr": "Ik heb vandaag echt de lul-kaart getrokken.", "cat": "Durum Kurtarma"}, {"nl": "Dit is de druppel die de emmer doet overlopen!", "tr": "Dit is de druppel die de emmer doet overlopen!", "cat": "Durum Kurtarma"}, {"nl": "Je maakt van een mug een olifant.", "tr": "Pireyi deve yapıyorsun", "cat": "Durum Kurtarma"}, {"nl": "Dat is echt vet goud!", "tr": "harika, bomba", "cat": "Durum Kurtarma"}, {"nl": "Dat is echt asociaal.", "tr": "Dat is echt asociaal.", "cat": "Durum Kurtarma"}, {"nl": "Doe eens even normaal!", "tr": "Doe eens even normaal!", "cat": "Durum Kurtarma"}, {"nl": "Geen plan.", "tr": "Bilmiyorum", "cat": "Durum Kurtarma"}, {"nl": "Wie niet horen wil, moet voelen.", "tr": "Wie niet horen wil, moet voelen.", "cat": "Durum Kurtarma"}, {"nl": "Eigen schuld, dikke bult.", "tr": "Müstahak, kendi düşen ağlamaz", "cat": "Durum Kurtarma"}, {"nl": "Als het kalf verdronken is, dempt men de put.", "tr": "İş işten geçti artık", "cat": "Durum Kurtarma"}, {"nl": "Daar valt geen speld tussen te krijgen.", "tr": "Bu kesin, değiştirilemez bir gerçek", "cat": "Durum Kurtarma"}, {"nl": "Achteraf kijk je een koe in de kont.", "tr": "Sonradan akıl vermek/haklı çıkmak kolaydır", "cat": "Durum Kurtarma"}, {"nl": "Je preekt wijn maar drinkt water.", "tr": "Je preekt wijn maar drinkt water.", "cat": "Durum Kurtarma"}, {"nl": "Ik heb geen interesse in koetjes en kalfjes.", "tr": "boş muhabbet/havadan sudan konuşmak", "cat": "Durum Kurtarma"}, {"nl": "Dit kost me klauwen vol geld.", "tr": "Dit kost me klauwen vol geld.", "cat": "Durum Kurtarma"}, {"nl": "Ik moet elk dubbeltje omdraaien.", "tr": "Ik moet elk dubbeltje omdraaien.", "cat": "Durum Kurtarma"}, {"nl": "Alleen de zon gaat voor niks op.", "tr": "Bedava olan hiçbir şey yoktur", "cat": "Durum Kurtarma"}, {"nl": "Goedkoop is duurkoop.", "tr": "Ucuz mal alan, iki kez alır", "cat": "Umursamazlık"}, {"nl": "Ik leef van de hand in de tand.", "tr": "Günübirlik, anca kendime yetecek kadar kazanıyorum", "cat": "Umursamazlık"}, {"nl": "Zullen we de rekening splitsen?", "tr": "Going Dutch / Tikkie gönderme", "cat": "Umursamazlık"}, {"nl": "Waar voor je geld.", "tr": "Waar voor je geld.", "cat": "Umursamazlık"}, {"nl": "De wereld draait wel door, hoe het ook met je gaat.", "tr": "De Wereld Draait Door", "cat": "Umursamazlık"}, {"nl": "Dat gaat je geen barst aan.", "tr": "Seni hiç ilgilendirmez, haddini bil", "cat": "Umursamazlık"}, {"nl": "We hebben niet samen in de zandbak gezeten.", "tr": "We hebben niet samen in de zandbak gezeten.", "cat": "Umursamazlık"}, {"nl": "Blijf eens zakelijk.", "tr": "Blijf eens zakelijk.", "cat": "Umursamazlık"}, {"nl": "En nu een punt erachter.", "tr": "En nu een punt erachter.", "cat": "Umursamazlık"}, {"nl": "Einde bericht.", "tr": "Einde bericht.", "cat": "Umursamazlık"}, {"nl": "Dit hondenweer maakt me somber.", "tr": "Dit hondenweer maakt me somber.", "cat": "Umursamazlık"}, {"nl": "Alweer vertraging, typisch NS.", "tr": "Alweer vertraging, typisch NS.", "cat": "Umursamazlık"}, {"nl": "Dit kan ik vast wel van de belasting aftrekken.", "tr": "Dit kan ik vast wel van de belasting aftrekken.", "cat": "Umursamazlık"}, {"nl": "We moeten de bal laag houden.", "tr": "We moeten de bal laag houden.", "cat": "Umursamazlık"}, {"nl": "Verstand op nul en gaan!", "tr": "Verstand op nul en gaan!", "cat": "Umursamazlık"}, {"nl": "De emmer is vol.", "tr": "De emmer is vol.", "cat": "Umursamazlık"}, {"nl": "Praat tegen de muur.", "tr": "Praat tegen de muur.", "cat": "Umursamazlık"}, {"nl": "Zand erover!", "tr": "Sünger çek üstüne, unut gitsin", "cat": "Umursamazlık"}, {"nl": "De moed zakt mij niet zomaar in de schoenen.", "tr": "De moed zakt mij niet zomaar in de schoenen.", "cat": "Umursamazlık"}, {"nl": "Moet ik een zakdoekje voor je halen?", "tr": "Moet ik een zakdoekje voor je halen?", "cat": "Umursamazlık"}, {"nl": "Het zal me aan mijn reet roesten.", "tr": "Zerre umurumda değil", "cat": "Umursamazlık"}, {"nl": "Wie dat gelooft, wordt zalig.", "tr": "Wie dat gelooft, wordt zalig.", "cat": "Umursamazlık"}, {"nl": "Dat is niet op mijn mest gegroeid.", "tr": "Dat is niet op mijn mest gegroeid.", "cat": "Umursamazlık"}, {"nl": "Het zal me een biet zijn.", "tr": "Het zal me een biet zijn.", "cat": "Umursamazlık"}, {"nl": "Morgen is er weer een dag.", "tr": "Morgen is er weer een dag.", "cat": "Umursamazlık"}, {"nl": "De soep wordt nooit zo heet gegeten als zij wordt opgediend.", "tr": "De soep wordt nooit zo heet gegeten als zij wordt opgediend.", "cat": "Hayat Devam"}, {"nl": "Het is wat het is.", "tr": "Het is wat het is.", "cat": "Hayat Devam"}, {"nl": "Reizigers moet je niet tegenhouden.", "tr": "Reizigers moet je niet tegenhouden.", "cat": "Hayat Devam"}, {"nl": "Vaarwel.", "tr": "Vaarwel.", "cat": "Hayat Devam"}, {"nl": "Houdoe en bedankt!", "tr": "Houdoe en bedankt!", "cat": "Hayat Devam"}, {"nl": "Zand erover, de kous is af.", "tr": "Mevzu tamamen kapanmıştır, bitmiştir", "cat": "Hayat Devam"}];
+
+// kategori rengini isimden üret (sabit, tutarlı pastel)
+function catColor(cat){
+  let h=0; for(let i=0;i<cat.length;i++) h=(h*31+cat.charCodeAt(i))%360;
+  return { bg:`hsl(${h} 72% 92%)`, text:`hsl(${h} 60% 30%)` };
+}
+
+// ===== STATE =====
+let currentCat="Öğreniyorum", quizMode=false, quizFlipped=new Set();
+let favorites=[], known=[], seenHistory=[], currentDailyIdx=-1;
+let dailyTeacherData=null, teacherCache={}, teacherOpen=new Set(), toastTimer;
+
+// ===== API ANAHTARI MODAL =====
+function openKeyModal(){ const i=document.getElementById("keyInput"); i.value=getApiKey(); document.getElementById("keyModal").classList.add("show"); setTimeout(()=>i.focus(),100); }
+function closeKeyModal(){ document.getElementById("keyModal").classList.remove("show"); }
+function saveKey(){ const k=document.getElementById("keyInput").value.trim(); try{localStorage.setItem("vak_gemini_key",k);}catch{} closeKeyModal(); updateBanner(); showToast(k?"🔑 Anahtar kaydedildi":"Anahtar temizlendi"); }
+function clearKey(){ try{localStorage.removeItem("vak_gemini_key");}catch{} document.getElementById("keyInput").value=""; closeKeyModal(); updateBanner(); showToast("🗑️ Anahtar silindi"); }
+function updateBanner(){
+  const has=!!getApiKey();
+  const b=document.getElementById("aiBanner"), t=document.getElementById("aiBannerText"), s=document.getElementById("aiBannerSub"), kb=document.getElementById("keyBtn");
+  if(has){ b.classList.remove("warn"); t.textContent="Gemini AI aktif"; s.textContent="🔊 Gerçek ses · ⭐ Favori · 🎓 Gramer · 📝 Test"; if(kb)kb.classList.remove("active"); }
+  else { b.classList.add("warn"); t.textContent="Anahtar girilmedi (tarayıcı sesi kullanılıyor)"; s.textContent="Dokun → ücretsiz Gemini anahtarı ile gerçek Hollandaca ses"; if(kb)kb.classList.add("active"); }
+}
+
+// ===== STORAGE =====
+function loadState(){
+  try{ favorites=JSON.parse(localStorage.getItem("vak_favorites")||"[]"); }catch{ favorites=[]; }
+  try{ known=JSON.parse(localStorage.getItem("vak_known")||"[]"); }catch{ known=[]; }
+  try{ seenHistory=JSON.parse(localStorage.getItem("vak_history")||"[]"); }catch{ seenHistory=[]; }
+  try{ const s=localStorage.getItem("vak_daily_idx"), d=localStorage.getItem("vak_daily_date"); if(s!==null&&d===new Date().toDateString()) currentDailyIdx=parseInt(s); }catch{}
+}
+function saveState(){
+  try{ localStorage.setItem("vak_favorites",JSON.stringify(favorites)); }catch{}
+  try{ localStorage.setItem("vak_known",JSON.stringify(known)); }catch{}
+  try{ localStorage.setItem("vak_history",JSON.stringify(seenHistory)); }catch{}
+  try{ localStorage.setItem("vak_daily_idx",currentDailyIdx); localStorage.setItem("vak_daily_date",new Date().toDateString()); }catch{}
+}
+
+// ===== YEDEK / GERİ YÜKLE =====
+function exportData(){ return JSON.stringify({ uygulama:"vak-sozluk", v:1, tarih:new Date().toISOString(), favorites, known, seenHistory, dailyIdx:currentDailyIdx }); }
+function openBackupModal(){
+  document.getElementById("backupBox").value=exportData();
+  document.getElementById("restoreBox").value="";
+  const cur=(currentDailyIdx>=0&&currentDailyIdx<DATA.length)?DATA[currentDailyIdx].nl:"-";
+  document.getElementById("backupStat").innerHTML=`📚 ${DATA.length} ifadeden <b>${known.length}</b> biliniyor · ⭐ ${favorites.length} favori<br>📅 Günün ifadesi: "${escHtml(cur)}"`;
+  document.getElementById("backupModal").classList.add("show");
+}
+function closeBackupModal(){ document.getElementById("backupModal").classList.remove("show"); }
+function copyBackup(){
+  const t=document.getElementById("backupBox"); t.select(); t.setSelectionRange(0,99999);
+  const done=()=>showToast("📋 Yedek kopyalandı");
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t.value).then(done).catch(()=>{ try{document.execCommand("copy");done();}catch{ showToast("Kopyalanamadı — metni elle seç"); } }); }
+  else { try{document.execCommand("copy");done();}catch{ showToast("Kopyalanamadı — metni elle seç"); } }
+}
+function downloadBackup(){
+  try{
+    const blob=new Blob([exportData()],{type:"application/json"});
+    const url=URL.createObjectURL(blob), a=document.createElement("a");
+    a.href=url; a.download=`vak-sozluk-yedek-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1500);
+    showToast("⬇️ Yedek dosyası indirildi");
+  }catch{ showToast("İndirilemedi — Kopyala'yı kullan"); }
+}
+function applyRestore(raw){
+  raw=(raw||"").trim();
+  if(!raw){ showToast("Yedek boş görünüyor"); return; }
+  let o; try{ o=JSON.parse(raw); }catch{ showToast("⚠️ Geçersiz yedek dosyası"); return; }
+  if(Array.isArray(o.favorites)) favorites=o.favorites;
+  if(Array.isArray(o.known)) known=o.known;
+  if(Array.isArray(o.seenHistory)) seenHistory=o.seenHistory;
+  if(typeof o.dailyIdx==="number"&&o.dailyIdx>=0&&o.dailyIdx<DATA.length) currentDailyIdx=o.dailyIdx;
+  saveState();
+  closeBackupModal();
+  initCategories(); renderCards(); updateStats(); renderHistory();
+  if(currentDailyIdx>=0&&currentDailyIdx<DATA.length) showDaily(currentDailyIdx);
+  showToast("♻️ İlerleme geri yüklendi");
+}
+function restoreBackup(){ applyRestore(document.getElementById("restoreBox").value); }
+function restoreFromFile(input){
+  const f=input.files&&input.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{ applyRestore(String(r.result||"")); input.value=""; };
+  r.onerror=()=>{ showToast("Dosya okunamadı"); input.value=""; };
+  r.readAsText(f);
+}
+
+// ===== GÜNÜN İFADESİ =====
+function initDaily(){
+  if(currentDailyIdx===-1){ const d=new Date(); currentDailyIdx=(d.getDate()+d.getMonth()*31+d.getFullYear())%DATA.length; }
+  showDaily(currentDailyIdx);
+}
+function showDaily(idx){
+  if(typeof stopLoop==="function") stopLoop();
+  const it=DATA[idx];
+  document.getElementById("dailyNl").textContent=it.nl;
+  document.getElementById("dailyTr").textContent=it.tr;
+  document.getElementById("dailyCounter").textContent=`#${idx+1}`;
+  document.getElementById("dailyTeacherWrap").innerHTML=""; dailyTeacherData=null;
+  if(!seenHistory.find(h=>h.idx===idx)){ seenHistory.unshift({idx,nl:it.nl,tr:it.tr}); if(seenHistory.length>30) seenHistory.pop(); saveState(); }
+  renderHistory();
+}
+function nextDaily(){
+  const seen=new Set(seenHistory.map(h=>h.idx));
+  const unseen=DATA.map((_,i)=>i).filter(i=>!seen.has(i));
+  currentDailyIdx=unseen.length?unseen[Math.floor(Math.random()*unseen.length)]:Math.floor(Math.random()*DATA.length);
+  saveState(); showDaily(currentDailyIdx); showToast("✨ Yeni ifade!");
+}
+function renderHistory(){
+  const box=document.getElementById("historyBox"), list=document.getElementById("historyList");
+  if(seenHistory.length<=1){ box.style.display="none"; return; }
+  box.style.display="block";
+  list.innerHTML=seenHistory.slice(1,8).map(h=>`
+    <div class="history-item" onclick="speakIdx(${h.idx},'h${h.idx}')">
+      <div><div class="history-nl">${escHtml(h.nl)}</div><div class="history-tr">${escHtml(h.tr)}</div></div>
+      <button class="history-speak" data-speak="h${h.idx}" onclick="event.stopPropagation();speakIdx(${h.idx},'h${h.idx}')">🔊</button>
+    </div>`).join("");
+}
+
+// ===== TEACHER (metin modeli) =====
+async function askDailyTeacher(){
+  const wrap=document.getElementById("dailyTeacherWrap");
+  if(wrap.innerHTML&&dailyTeacherData){ wrap.innerHTML=""; dailyTeacherData=null; return; }
+  if(!getApiKey()){ openKeyModal(); return; }
+  const it=DATA[currentDailyIdx];
+  wrap.innerHTML=`<div style="background:#fff;border-radius:16px;border:1.5px solid #c7d7f5;margin-bottom:14px"><div class="teacher-loading"><div class="loader"></div>Analiz ediliyor...</div></div>`;
+  const r=await fetchTeacher(it);
+  if(r.error){ wrap.innerHTML=`<div style="background:#fff;border-radius:16px;border:1.5px solid #fca5a5;padding:14px"><div class="teacher-error">❌ ${escHtml(r.error)}</div></div>`; if(r.needKey) openKeyModal(); }
+  else { dailyTeacherData=r; wrap.innerHTML=buildTeacherPanel("daily",it,r); activateTab("daily","parcala"); }
+}
+async function askTeacher(idx){
+  const pid=`tp-${idx}`, card=document.querySelector(`[data-cardidx="${idx}"]`), btn=card?card.querySelector(".teacher-btn"):null;
+  if(teacherOpen.has(idx)){ teacherOpen.delete(idx); const p=document.getElementById(pid); if(p)p.remove(); if(btn)btn.classList.remove("open"); return; }
+  if(!getApiKey()){ openKeyModal(); return; }
+  teacherOpen.add(idx); if(btn)btn.classList.add("open");
+  let panel=document.getElementById(pid); if(!panel){ panel=document.createElement("div"); panel.id=pid; if(card)card.appendChild(panel); }
+  if(teacherCache[idx]){ panel.outerHTML=buildTeacherPanel(idx,DATA[idx],teacherCache[idx]); activateTab(idx,"parcala"); return; }
+  panel.innerHTML=`<div class="teacher-panel"><div class="teacher-loading"><div class="loader"></div>Analiz ediliyor...</div></div>`;
+  const r=await fetchTeacher(DATA[idx]);
+  if(r.error){ panel.innerHTML=`<div class="teacher-panel"><div class="teacher-error">❌ ${escHtml(r.error)}</div></div>`; teacherOpen.delete(idx); if(btn)btn.classList.remove("open"); if(r.needKey) openKeyModal(); }
+  else { teacherCache[idx]=r; panel.outerHTML=buildTeacherPanel(idx,DATA[idx],r); activateTab(idx,"parcala"); }
+}
+async function fetchTeacher(item){
+  const key=getApiKey();
+  if(!key) return { error:"Önce sağ üstteki ⚙️ ile Gemini API anahtarını gir.", needKey:true };
+  const prompt=`You are a Dutch language teacher. Analyze this Dutch phrase for a Turkish-speaking student.
+Respond with ONLY a JSON object, no markdown.
+
+Dutch phrase: "${item.nl}"
+Turkish meaning: "${item.tr}"
+
+JSON (property names EXACTLY as shown, all values in Turkish, be concise):
+{
+ "ozet":{"zaman":"which tense + its Dutch name, e.g. 'Geniş zaman (onvoltooid tegenwoordige tijd)'; if none, 'belirsiz/emir' vb.","yapi":"sentence structure / word order in one short line (e.g. V2: çekimli fiil 2. sırada)","kisi":"which grammatical person & pronoun, formal vs informal (u/uw mı jij/jouw mu)"},
+ "dekod":[{"nl":"each word IN SENTENCE ORDER","tr":"literal word-for-word Turkish (NOT the natural translation)","tur":"type: fiil/isim/sıfat/zamir/edat/bağlaç/zarf/tanımlık","not":"WHY this exact form: fiil çekimi (zaman+şahıs), sıfatın -e takısı, çoğul, ayrılabilir fiil eki, iyelik/tanımlık sebebi vb. EN FAZLA ~14 kelime."}],
+ "telaffuz":[{"kelime":"word","okuyus":"pronounce with Turkish letters","ipucu":"tip"}],
+ "dilbilgisi":"Grammar in Turkish: structure, conjugation, formal/informal (u vs jij), word order. 3-5 sentences.",
+ "kullanim":"When/how to use it, tone. 2-3 sentences in Turkish.",
+ "alternatifler":["alt phrase 1","alt phrase 2"],
+ "hata":"Most common mistake Turkish speakers make, in Turkish.",
+ "quiz":[{"soru":"question in Turkish","dogru":"correct","yanlis":["wrong1","wrong2"]}]
+}`;
+  try{
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_TEXT_MODEL}:generateContent?key=${encodeURIComponent(key)}`,{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig:{ maxOutputTokens:2600, temperature:0.2, responseMimeType:"application/json", thinkingConfig:{thinkingBudget:0} } })
+    });
+    const data=await res.json();
+    if(data.error) throw new Error(data.error.message);
+    const raw=data.candidates?.[0]?.content?.parts?.[0]?.text||"";
+    if(!raw) throw new Error("Gemini boş yanıt döndü");
+    const a=raw.indexOf("{"), b=raw.lastIndexOf("}");
+    if(a===-1||b===-1) throw new Error("JSON bulunamadı");
+    return JSON.parse(raw.slice(a,b+1));
+  }catch(e){
+    let m=e.message||"Bilinmeyen hata";
+    if(/api key|api_key|permission|invalid/i.test(m)) return { error:"API anahtarı geçersiz görünüyor. ⚙️ ile kontrol et.", needKey:true };
+    if(/failed to fetch|networkerror/i.test(m)) m="İnternet bağlantısı yok veya API erişilemiyor";
+    return { error:m };
+  }
+}
+function buildTeacherPanel(id,item,d){
+  const tabs=["parcala","telaffuz","dilbilgisi","quiz"];
+  const lbl={parcala:"🧩 Parçala",telaffuz:"🔤 Telaffuz",dilbilgisi:"🏗️ Gramer",quiz:"📝 Test"};
+  const dekod=(d.dekod&&d.dekod.length)?d.dekod:(d.kelimeler||[]);
+  const oz=d.ozet||{};
+  const ozHtml=(oz.zaman||oz.yapi||oz.kisi)?`<div class="ozet">${oz.zaman?`<div class="ozet-row"><span class="ozet-k">🕐 Zaman</span><span class="ozet-v">${escHtml(oz.zaman)}</span></div>`:''}${oz.kisi?`<div class="ozet-row"><span class="ozet-k">👤 Kişi</span><span class="ozet-v">${escHtml(oz.kisi)}</span></div>`:''}${oz.yapi?`<div class="ozet-row"><span class="ozet-k">🔤 Yapı</span><span class="ozet-v">${escHtml(oz.yapi)}</span></div>`:''}</div>`:'';
+  const dxHtml=dekod.map(w=>`<div class="dx"><div class="dx-top"><span class="dx-nl">${escHtml(w.nl)}</span>${w.tur?`<span class="dx-tur">${escHtml(w.tur)}</span>`:''}</div><div class="dx-tr">→ "${escHtml(w.tr)}"</div>${w.not?`<div class="dx-not">⚙️ ${escHtml(w.not)}</div>`:''}</div>`).join("");
+  const pHtml=`<div class="decode-note">🧩 Birkenbihl + dilbilgisi: her kelimenin birebir karşılığı ve <b>neden o biçimde</b> olduğu. Doğal anlam: "${escHtml(item.tr)}"</div>${ozHtml}${dxHtml}`;
+  const tHtml=(d.telaffuz||[]).map(t=>`<div class="pronun-box"><div class="pronun-word">${escHtml(t.kelime)}</div><div class="pronun-read">→ "${escHtml(t.okuyus||t.okunus||'')}"</div>${t.ipucu?`<div class="pronun-tip">💡 ${escHtml(t.ipucu)}</div>`:''}</div>`).join("");
+  const gHtml=`<div style="font-size:13px;line-height:1.8;color:#1e293b;margin-bottom:12px">${escHtml(d.dilbilgisi||'')}</div>${d.kullanim?`<div style="background:#eef3fc;border-radius:10px;padding:12px;font-size:13px;color:#1e40af;line-height:1.7;margin-bottom:10px">💡 ${escHtml(d.kullanim)}</div>`:''}${d.alternatifler&&d.alternatifler.length?`<div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">🔄 Alternatifler</div>${d.alternatifler.map(a=>`<div style="background:#f1f5f9;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:700;color:#334155;margin-bottom:4px">${escHtml(a)}</div>`).join('')}`:''}${d.hata?`<div style="background:#fee2e2;border-radius:10px;padding:12px;font-size:12px;color:#991b1b;font-weight:600;margin-top:8px">⚠️ ${escHtml(d.hata)}</div>`:''}`;
+  const q=d.quiz&&d.quiz[0];
+  const qHtml=q?buildMiniQuiz(id,q):`<div style="font-size:13px;color:#94a3b8;text-align:center;padding:20px">Test sorusu oluşturulamadı.</div>`;
+  const cont={parcala:pHtml,telaffuz:tHtml,dilbilgisi:gHtml,quiz:qHtml};
+  const pid=id==="daily"?"daily-teacher-panel":`tp-${id}`;
+  const ws=id==="daily"?'style="margin-bottom:14px"':'';
+  const isDaily=id==="daily", sKey=isDaily?"t-daily":("t-"+id);
+  const playClick=isDaily?`speakText(document.getElementById('dailyNl').textContent,'${sKey}')`:`speakIdx(${id},'${sKey}')`;
+  const closeClick=isDaily?`askDailyTeacher()`:`askTeacher(${id})`;
+  const head=`<div class="tp-head">
+    <button class="speak-btn${isCached(item.nl)?' ready':''}" data-speak="${sKey}" onclick="${playClick}" title="Dinle (tekrar)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></button>
+    <button class="rate-btn${rateIdx?' slow':''}" onclick="cycleRate()" title="Yavaşlat / Normal">${rateLabel()}</button>
+    <div class="tp-phrase">${escHtml(item.nl)}</div>
+    <button class="tp-close" onclick="${closeClick}" title="Kapat">✕</button>
+  </div>`;
+  return `<div class="teacher-panel" id="${pid}" ${ws}>${head}<div class="teacher-tabs">${tabs.map(t=>`<button class="teacher-tab" id="tab-${id}-${t}" onclick="activateTab('${id}','${t}')">${lbl[t]}</button>`).join("")}</div><div class="teacher-body">${tabs.map(t=>`<div class="teacher-section" id="sec-${id}-${t}">${cont[t]}</div>`).join("")}</div></div>`;
+}
+function activateTab(id,tab){ ["parcala","telaffuz","dilbilgisi","quiz"].forEach(t=>{ const a=document.getElementById(`tab-${id}-${t}`), s=document.getElementById(`sec-${id}-${t}`); if(a)a.classList.toggle("active",t===tab); if(s)s.classList.toggle("active",t===tab); }); }
+function buildMiniQuiz(id,q){
+  const opts=[q.dogru,...(q.yanlis||[])].sort(()=>Math.random()-.5);
+  return `<div class="mini-quiz"><div class="mini-quiz-q">${escHtml(q.soru)}</div><div class="mini-quiz-opts" id="quiz-opts-${id}">${opts.map(o=>`<button onclick="checkQuiz('${id}','${escHtml(o).replace(/'/g,"\\'")}','${escHtml(q.dogru).replace(/'/g,"\\'")}',this)">${escHtml(o)}</button>`).join("")}</div><div class="mini-quiz-result" id="quiz-result-${id}"></div></div>`;
+}
+function checkQuiz(id,sel,cor,btn){
+  const o=document.getElementById(`quiz-opts-${id}`), r=document.getElementById(`quiz-result-${id}`);
+  if(!o||o.dataset.answered) return; o.dataset.answered="1";
+  o.querySelectorAll("button").forEach(b=>{ b.disabled=true; if(b.textContent===cor) b.classList.add("correct"); });
+  if(sel===cor){ r.textContent="✅ Doğru!"; r.style.color="#065f46"; }
+  else { btn.classList.add("wrong"); r.textContent=`❌ Yanlış. Doğru: "${cor}"`; r.style.color="#991b1b"; }
+}
+
+// ===== SES: Gemini TTS + IndexedDB önbellek + tarayıcı yedeği =====
+let _db=null;
+function openDB(){ return new Promise((res,rej)=>{ if(_db) return res(_db); const rq=indexedDB.open("vakTTS",1); rq.onupgradeneeded=()=>rq.result.createObjectStore("audio"); rq.onsuccess=()=>{ _db=rq.result; res(_db); }; rq.onerror=()=>rej(rq.error); }); }
+async function cacheGet(k){ try{ const db=await openDB(); return await new Promise((res,rej)=>{ const t=db.transaction("audio","readonly").objectStore("audio").get(k); t.onsuccess=()=>res(t.result||null); t.onerror=()=>rej(t.error); }); }catch{ return null; } }
+async function cacheSet(k,blob){ try{ const db=await openDB(); await new Promise((res,rej)=>{ const t=db.transaction("audio","readwrite").objectStore("audio").put(blob,k); t.onsuccess=res; t.onerror=()=>rej(t.error); }); }catch{} }
+
+// hangi seslerin hazır olduğunu takip et (yeşil mikrofon)
+let cachedKeys=new Set();
+function isCached(text){ return cachedKeys.has(`${TTS_VOICE}::${text}`); }
+async function loadCachedKeys(){ try{ const db=await openDB(); const keys=await new Promise((r,j)=>{ const q=db.transaction("audio","readonly").objectStore("audio").getAllKeys(); q.onsuccess=()=>r(q.result||[]); q.onerror=()=>j(q.error); }); cachedKeys=new Set(keys); }catch{ cachedKeys=new Set(); } }
+async function cacheGetAll(){ try{ const db=await openDB(); const s=db.transaction("audio","readonly").objectStore("audio"); const keys=await new Promise((r,j)=>{const q=s.getAllKeys();q.onsuccess=()=>r(q.result||[]);q.onerror=()=>j(q.error);}); const vals=await new Promise((r,j)=>{const q=s.getAll();q.onsuccess=()=>r(q.result||[]);q.onerror=()=>j(q.error);}); return {keys,vals}; }catch{ return {keys:[],vals:[]}; } }
+function blobToB64(blob){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(String(r.result).split(",")[1]||""); r.onerror=()=>rej(r.error); r.readAsDataURL(blob); }); }
+
+async function downloadAudio(){
+  showToast("🎵 Sesler toplanıyor...");
+  const {keys,vals}=await cacheGetAll();
+  if(!keys.length){ showToast("Henüz kayıtlı ses yok"); return; }
+  const obj={ uygulama:"vak-sozluk-ses", v:1, voice:TTS_VOICE, tarih:new Date().toISOString(), audio:{} };
+  for(let i=0;i<keys.length;i++){ try{ obj.audio[keys[i]]=await blobToB64(vals[i]); }catch{} }
+  try{
+    const blob=new Blob([JSON.stringify(obj)],{type:"application/json"});
+    const url=URL.createObjectURL(blob), a=document.createElement("a");
+    a.href=url; a.download=`vak-sesler-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),2000);
+    showToast(`🎵 ${keys.length} ses indirildi`);
+  }catch{ showToast("İndirilemedi (dosya çok büyük olabilir)"); }
+}
+function restoreAudioFromFile(input){
+  const f=input.files&&input.files[0]; if(!f) return;
+  showToast("🎵 Sesler yükleniyor...");
+  const r=new FileReader();
+  r.onload=async ()=>{
+    try{
+      const o=JSON.parse(String(r.result||"")); const ent=Object.entries(o.audio||{}); let n=0;
+      for(const [k,b64] of ent){ try{ await cacheSet(k,new Blob([b64ToBytes(b64)],{type:"audio/wav"})); cachedKeys.add(k); n++; }catch{} }
+      renderCards(); showToast(`🎵 ${n} ses geri yüklendi`);
+    }catch{ showToast("⚠️ Geçersiz ses dosyası"); }
+    input.value="";
+  };
+  r.onerror=()=>{ showToast("Dosya okunamadı"); input.value=""; };
+  r.readAsText(f);
+}
+
+// sıfırlama
+function resetKnown(){
+  if(!confirm("Bildiklerim listesi sıfırlansın mı? Tüm kelimeler tekrar öğrenme havuzuna döner.")) return;
+  known=[]; saveState(); updateStats(); initCategories(); renderCards(); closeBackupModal(); showToast("🗑️ Bildiklerim sıfırlandı");
+}
+function resetAll(){
+  if(!confirm("TÜM ilerleme sıfırlansın mı? (favoriler + bildiklerin + geçmiş) Sesler silinmez.")) return;
+  favorites=[]; known=[]; seenHistory=[]; saveState(); updateStats(); initCategories(); renderCards(); renderHistory(); closeBackupModal(); showToast("🗑️ İlerleme sıfırlandı");
+}
+
+
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+
+
+
+
+function b64ToBytes(b64){ const bin=atob(b64); const a=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) a[i]=bin.charCodeAt(i); return a; }
+function rateFromMime(m){ const x=/rate=(\d+)/.exec(m||""); return x?parseInt(x[1]):24000; }
+function pcmToWav(pcm,rate){
+  const ch=1,bps=16,br=rate*ch*bps/8,ba=ch*bps/8,ds=pcm.length;
+  const buf=new ArrayBuffer(44+ds), dv=new DataView(buf); let o=0;
+  const ws=s=>{ for(let i=0;i<s.length;i++) dv.setUint8(o++,s.charCodeAt(i)); };
+  ws("RIFF"); dv.setUint32(o,36+ds,true);o+=4; ws("WAVE"); ws("fmt "); dv.setUint32(o,16,true);o+=4;
+  dv.setUint16(o,1,true);o+=2; dv.setUint16(o,ch,true);o+=2; dv.setUint32(o,rate,true);o+=4;
+  dv.setUint32(o,br,true);o+=4; dv.setUint16(o,ba,true);o+=2; dv.setUint16(o,bps,true);o+=2;
+  ws("data"); dv.setUint32(o,ds,true);o+=4; new Uint8Array(buf,44).set(pcm);
+  return new Blob([buf],{type:"audio/wav"});
+}
+async function geminiTTS(text){
+  const key=getApiKey(); if(!key) throw new Error("no-key");
+  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_TTS_MODEL}:generateContent?key=${encodeURIComponent(key)}`,{
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({ contents:[{parts:[{text:`Lees de volgende Nederlandse zin rustig en duidelijk voor: "${text}"`}]}], generationConfig:{ responseModalities:["AUDIO"], speechConfig:{ voiceConfig:{ prebuiltVoiceConfig:{ voiceName:TTS_VOICE } } } } })
+  });
+  const data=await res.json();
+  if(data.error) throw new Error(data.error.message);
+  const part=(data.candidates?.[0]?.content?.parts||[]).find(p=>p.inlineData);
+  if(!part) throw new Error("Ses verisi gelmedi");
+  return pcmToWav(b64ToBytes(part.inlineData.data), rateFromMime(part.inlineData.mimeType));
+}
+
+// tek döngü durumu: bir ifade LOOP_GAP_MS arayla tekrar tekrar çalar
+const LOOP_GAP_MS=1000;
+let loop={ key:null, url:null, count:0, timer:null, audio:null, items:null, itemIdx:0 };
+
+
+// hız: 1× → 0.75× → 0.5× → 1× ...
+const RATES=[1,0.75,0.5];
+let rateIdx=0;
+function rateLabel(){ const r=RATES[rateIdx]; return "🐢"+(""+r).replace(/^0\./,".")+"×"; }
+function updateRateButtons(){
+  const lbl=rateLabel(), slow=rateIdx!==0;
+  document.querySelectorAll(".rate-btn").forEach(b=>{ b.textContent=lbl; b.classList.toggle("slow",slow); });
+  const d=document.getElementById("dailySpeed"); if(d){ d.textContent=lbl; d.classList.toggle("active",slow); }
+}
+function cycleRate(){
+  rateIdx=(rateIdx+1)%RATES.length;
+  const r=RATES[rateIdx];
+  if(loop.audio){ try{ loop.audio.playbackRate=r; }catch{} }   // çalan sesi anında yavaşlat
+  if(_playAudio){ try{ _playAudio.playbackRate=r; }catch{} }
+  updateRateButtons();
+  showToast(r===1?"▶️ Normal hız":`🐢 ${r}× yavaş`);
+}
+
+function btnFor(key){ return key?document.querySelector(`[data-speak="${key}"]`):null; }
+function setBadge(key,n){ const b=btnFor(key); if(!b) return; b.style.position="relative"; let x=b.querySelector(".loop-badge"); if(!x){ x=document.createElement("span"); x.className="loop-badge"; b.appendChild(x); } x.textContent="×"+n; }
+function clearBadge(key){ const b=btnFor(key); if(!b) return; const x=b.querySelector(".loop-badge"); if(x) x.remove(); }
+
+function stopLoop(){
+  if(loop.timer){ clearTimeout(loop.timer); loop.timer=null; }
+  if(loop.audio){ try{loop.audio.pause();}catch{} loop.audio.onended=null; loop.audio=null; }
+  if(window.speechSynthesis){ try{window.speechSynthesis.cancel();}catch{} }
+  if(loop.url){ try{URL.revokeObjectURL(loop.url);}catch{} loop.url=null; }
+  if(loop.key!==null){ clearBadge(loop.key); const b=btnFor(loop.key); if(b) b.classList.remove("playing"); }
+  loop.key=null; loop.count=0;
+}
+
+function speakIdx(i,key){ speakText(DATA[i].nl,key); }
+
+async function speakText(text,key){
+  if(chain.on) stopChain();
+  // aynı hoparlöre tekrar basıldı → döngüyü durdur
+  if(loop.key!==null && loop.key===key){ stopLoop(); return; }
+  // başka bir ifade çalıyorsa önce onu durdur
+  if(loop.key!==null) stopLoop();
+
+  const btn=btnFor(key);
+  loop.key=key; loop.count=0; loop.url=null;   // bu tuşu sahiplen
+  if(btn) btn.classList.add("playing");
+
+  const apiKey=getApiKey();
+  if(!apiKey){ browserLoopOnce(text); return; } // anahtar yoksa tarayıcı sesiyle döngü
+
+  const ck=`${TTS_VOICE}::${text}`;
+  let blob=null;
+  try{
+    blob=await cacheGet(ck);
+    if(!blob){ blob=await geminiTTS(text); cacheSet(ck,blob); cachedKeys.add(ck); if(btn) btn.classList.add("ready"); }
+    else { cachedKeys.add(ck); }
+  }catch(e){
+    if(loop.key!==key) return;                  // bu sırada durdurulmuş
+    const m=String(e.message||"");
+    if(/quota|billing|exceeded|resource_exhausted|permission|not found|404/i.test(m)) showToast("⚠️ Gemini sesi yok, tarayıcı sesi devrede");
+    browserLoopOnce(text); return;
+  }
+  if(loop.key!==key) return;                    // kullanıcı beklerken durdurmuş
+  loop.url=URL.createObjectURL(blob);
+  loopPlayOnce();
+}
+
+function loopPlayOnce(){
+  if(loop.key===null||!loop.url) return;
+  const a=new Audio(loop.url); loop.audio=a; a.playbackRate=RATES[rateIdx];
+  loop.count++; setBadge(loop.key,loop.count);
+  const next=()=>{ if(loop.key===null) return; if(repTarget()!==Infinity && loop.count>=repTarget()){ stopLoop(); return; } loop.timer=setTimeout(loopPlayOnce,LOOP_GAP_MS); };
+  a.onended=next; a.onerror=next;
+  a.play().catch(()=>{});
+}
+
+function browserLoopOnce(text){
+  if(loop.key===null) return;
+  if(!window.speechSynthesis){ showToast("⚠️ Tarayıcı ses desteği yok"); stopLoop(); return; }
+  window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text); u.lang="nl-NL"; u.rate=0.9*RATES[rateIdx]; u.pitch=1.03;
+  const vs=window.speechSynthesis.getVoices();
+  const pref=[vs.find(v=>v.lang==="nl-NL"&&v.name.includes("Google")),vs.find(v=>v.lang==="nl-NL"&&!v.localService),vs.find(v=>v.lang==="nl-NL"),vs.find(v=>v.lang==="nl-BE"),vs.find(v=>v.lang&&v.lang.startsWith("nl"))].find(Boolean);
+  if(pref) u.voice=pref; else if(loop.count===0) showToast("📱 Cihaza Hollandaca ses paketi yükle");
+  loop.count++; setBadge(loop.key,loop.count);
+  const next=()=>{ if(loop.key===null) return; if(repTarget()!==Infinity && loop.count>=repTarget()){ stopLoop(); return; } loop.timer=setTimeout(()=>browserLoopOnce(text),LOOP_GAP_MS); };
+  u.onend=next; u.onerror=next;
+  window.speechSynthesis.speak(u);
+}
+if(window.speechSynthesis){ window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices(); }
+
+// ===== TEKRAR SAYISI + ZİNCİRLEME OTO-GEÇİŞ =====
+const REPS=[5,10,3,Infinity];
+let repIdx=0;
+function repTarget(){ return REPS[repIdx]; }
+function repLabel(){ const r=REPS[repIdx]; return "🔁"+(r===Infinity?"∞":r)+"×"; }
+function updateRepButtons(){ const l=repLabel(); document.querySelectorAll(".rep-btn").forEach(b=>b.textContent=l); }
+function repCycle(){ repIdx=(repIdx+1)%REPS.length; updateRepButtons(); const r=REPS[repIdx]; showToast(r===Infinity?"🔁 Sonsuz tekrar — geçiş yok":`🔁 Her kelime ${r}× sonra otomatik geçer`); }
+
+let chain={ on:false, list:[], pos:0, curBtn:null, curKey:null }, _playAudio=null;
+function stopChain(){
+  chain.on=false;
+  if(_playAudio){ try{_playAudio.pause();}catch{} _playAudio=null; }
+  if(window.speechSynthesis){ try{window.speechSynthesis.cancel();}catch{} }
+  if(chain.curKey) clearBadge(chain.curKey);
+  document.querySelectorAll(".speak-btn.playing").forEach(b=>b.classList.remove("playing"));
+  chain.list=[]; chain.pos=0; chain.curBtn=null; chain.curKey=null;
+}
+function chainContainer(btn){ return btn.closest("[data-playlist]")||document; }
+function playFrom(btn){
+  if(!btn) return;
+  stopLoop();
+  const key=btn.dataset.speak;
+  if(chain.on && chain.curKey===key){ stopChain(); return; }   // aynı tuş → durdur
+  stopChain();
+  const cont=chainContainer(btn);
+  chain.list=[...cont.querySelectorAll(".speak-btn[data-text]")];
+  const idx=chain.list.indexOf(btn);
+  chain.pos=idx<0?0:idx;
+  chain.on=true;
+  runChain();
+}
+function speakOnce(text){
+  return new Promise(resolve=>{
+    const key=getApiKey(), ck=`${TTS_VOICE}::${text}`;
+    const br=()=>{ if(!window.speechSynthesis){resolve();return;} window.speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang="nl-NL"; u.rate=0.9*RATES[rateIdx]; u.pitch=1.03; const vs=window.speechSynthesis.getVoices(); const p=vs.find(v=>v.lang==="nl-NL")||vs.find(v=>v.lang&&v.lang.startsWith("nl")); if(p)u.voice=p; u.onend=()=>resolve(); u.onerror=()=>resolve(); window.speechSynthesis.speak(u); };
+    if(!key){ br(); return; }
+    cacheGet(ck).then(b=>b||geminiTTS(text).then(nb=>{ cacheSet(ck,nb); cachedKeys.add(ck); return nb; }))
+      .then(blob=>{ if(!chain.on){resolve();return;} if(!blob){ br(); return; } const url=URL.createObjectURL(blob), a=new Audio(url); a.playbackRate=RATES[rateIdx]; _playAudio=a; a.onended=()=>{URL.revokeObjectURL(url);resolve();}; a.onerror=()=>{URL.revokeObjectURL(url);resolve();}; a.play().catch(()=>{URL.revokeObjectURL(url);resolve();}); })
+      .catch(()=>br());
+  });
+}
+async function runChain(){
+  while(chain.on && chain.pos<chain.list.length){
+    const btn=chain.list[chain.pos];
+    if(!btn || btn.dataset.text===undefined){ chain.pos++; continue; }
+    const text=btn.dataset.text, key=btn.dataset.speak;
+    chain.curBtn=btn; chain.curKey=key;
+    document.querySelectorAll(".speak-btn.playing").forEach(b=>b.classList.remove("playing"));
+    btn.classList.add("playing");
+    try{ btn.scrollIntoView({block:"center",behavior:"smooth"}); }catch{}
+    const target=repTarget(); let rep=0;
+    while(chain.on && (target===Infinity || rep<target)){
+      rep++; setBadge(key,rep);
+      await speakOnce(text);
+      if(!chain.on) break;
+      if(target!==Infinity && rep>=target) break;
+      await sleep(900);
+    }
+    btn.classList.remove("playing"); clearBadge(key);
+    if(!chain.on) break;
+    if(target===Infinity) break;
+    chain.pos++;
+    if(chain.pos<chain.list.length) await sleep(700);
+  }
+  const finished = chain.on && chain.pos>=chain.list.length;
+  stopChain();
+  if(finished) showToast("✅ Liste bitti");
+}
+
+// ===== FAVORİ / BİLİYORUM / İLERLEME =====
+function toggleFav(nl){
+  const i=favorites.indexOf(nl);
+  if(i===-1){ favorites.push(nl); showToast("⭐ Favori — sonra dinlersin"); } else { favorites.splice(i,1); showToast("Favoriden çıkarıldı"); }
+  saveState(); updateStats(); renderCards();
+}
+function toggleKnown(nl){
+  const i=known.indexOf(nl);
+  if(i===-1){ known.push(nl); showToast("✅ Biliyorum — listeden kalktı"); } else { known.splice(i,1); showToast("Tekrar öğrenme listesinde"); }
+  saveState(); updateStats(); renderCards();
+}
+function updateStats(){
+  const total=DATA.length, kn=known.length, fav=favorites.length;
+  const learn=DATA.filter(d=>!favorites.includes(d.nl)&&!known.includes(d.nl)).length;
+  const sl=document.getElementById("statLearn"); if(sl) sl.textContent=learn;
+  const sk=document.getElementById("statKnown"); if(sk) sk.textContent=kn;
+  const sf=document.getElementById("statFavs"); if(sf) sf.textContent=fav;
+  const pct=total?Math.round(kn/total*100):0;
+  const pf=document.getElementById("progressFill"); if(pf) pf.style.width=pct+"%";
+  const pt=document.getElementById("progressText"); if(pt) pt.textContent=`${kn} / ${total} öğrenildi · %${pct}`;
+}
+
+// ===== KATEGORİ =====
+const CAT_ICON={ "Öğreniyorum":"📚 ", "Favoriler":"⭐ ", "Bildiklerim":"✅ ", "Tümü":"🗂️ " };
+function initCategories(){
+  const cats=["Öğreniyorum","Favoriler","Bildiklerim","Tümü",...new Set(DATA.map(d=>d.cat))];
+  document.getElementById("catButtons").innerHTML=cats.map(c=>`<button class="cat-btn${c===currentCat?' active':''}" onclick="selectCat('${c.replace(/'/g,"\\'")}',event)">${CAT_ICON[c]||""}${c}</button>`).join("");
+}
+function selectCat(c,e){ currentCat=c; document.querySelectorAll(".cat-btn").forEach(b=>b.classList.remove("active")); e.target.classList.add("active"); renderCards(); }
+function selectCatByName(name){ currentCat=name; initCategories(); renderCards(); const bar=document.getElementById("catButtons"); if(bar) bar.scrollLeft=0; }
+
+// ===== QUIZ =====
+function toggleQuiz(){ quizMode=!quizMode; quizFlipped=new Set(); const b=document.getElementById("quizToggle"); b.textContent=quizMode?"📖 Liste":"🎯 Quiz"; b.classList.toggle("active",quizMode); renderCards(); }
+function toggleQuizCard(idx){
+  if(!quizMode) return; const it=DATA[idx], el=document.querySelector(`[data-cardcontent="${idx}"]`); if(!el) return;
+  if(quizFlipped.has(idx)){ quizFlipped.delete(idx); el.innerHTML=`<div class="card-nl" style="padding-right:0">${escHtml(it.nl)}</div><div class="quiz-hint">Türkçeyi görmek için tıkla →</div>`; }
+  else { quizFlipped.add(idx); el.innerHTML=`<div style="font-size:15px;font-weight:700;color:#1e293b;padding-top:6px;border-top:1px solid #f1f5f9">${escHtml(it.tr)}</div><div class="quiz-hint">← Gizlemek için tıkla</div>`; }
+}
+
+// ===== KARTLAR =====
+function renderCards(){
+  if(typeof stopLoop==="function") stopLoop();
+  teacherOpen=new Set(); teacherCache={};
+  const q=document.getElementById("searchInput").value.toLowerCase();
+  const c=document.getElementById("cardsContainer");
+  const list=DATA.map((d,i)=>({...d,idx:i})).filter(it=>{
+    if(q && !(it.nl.toLowerCase().includes(q)||it.tr.toLowerCase().includes(q))) return false;
+    const isFav=favorites.includes(it.nl), isKnown=known.includes(it.nl);
+    switch(currentCat){
+      case "Tümü": return true;
+      case "Favoriler": return isFav;
+      case "Bildiklerim": return isKnown;
+      case "Öğreniyorum": return !isFav && !isKnown;
+      default: return it.cat===currentCat && !isFav && !isKnown;
+    }
+  });
+  document.getElementById("resultCount").textContent=`${list.length} ifade`;
+  if(!list.length){
+    let icon="🔍", text="Sonuç bulunamadı.";
+    if(!q){
+      if(currentCat==="Öğreniyorum"){ icon="🎉"; text="Öğrenme listen boş! Hepsini ✅ biliyorum ya da ⭐ favori yaptın. 🗂️ Tümü'nden gözden geçirebilirsin."; }
+      else if(currentCat==="Favoriler"){ icon="⭐"; text="Henüz favori yok. Bir kartta ☆'a basınca buraya düşer, sonra dinlersin."; }
+      else if(currentCat==="Bildiklerim"){ icon="✅"; text="Henüz 'biliyorum' işaretlemedin. Bir kartta ✓'e bas, ekrandan kalksın."; }
+      else { icon="✅"; text="Bu kategoride kalan yok — hepsini biliyor ya da favoriledin."; }
+    }
+    c.innerHTML=`<div class="empty"><div class="empty-icon">${icon}</div><div class="empty-text">${text}</div></div>`; return;
+  }
+  c.innerHTML=list.map((it,i)=>{
+    const col=catColor(it.cat), fav=favorites.includes(it.nl), kn=known.includes(it.nl), sk=`c-${it.idx}`;
+    const nlAttr=escHtml(it.nl).replace(/"/g,'&quot;');
+    const body=quizMode?`<div class="card-nl" style="padding-right:0">${escHtml(it.nl)}</div><div class="quiz-hint">Türkçeyi görmek için tıkla →</div>`:`<div class="card-nl">${escHtml(it.nl)}</div><div class="card-tr">${escHtml(it.tr)}</div>`;
+    return `<div class="card${quizMode?' quiz':''}" data-cardidx="${it.idx}" onclick="${quizMode?`toggleQuizCard(${it.idx})`:''}" style="animation-delay:${Math.min(i*.02,.2)}s">
+      <div class="card-meta">
+        <span class="card-num">#${it.idx+1}</span>
+        <span class="card-cat" style="background:${col.bg};color:${col.text}">${escHtml(it.cat)}</span>
+        <button class="mark-btn fav${fav?' on':''}" style="margin-left:auto" data-nl="${nlAttr}" onclick="event.stopPropagation();toggleFav(this.dataset.nl)" title="Favori — sonra dinle">${fav?"⭐":"☆"}</button>
+        <button class="mark-btn known${kn?' on':''}" data-nl="${nlAttr}" onclick="event.stopPropagation();toggleKnown(this.dataset.nl)" title="Biliyorum — listeden kaldır">✓</button>
+      </div>
+      <div data-cardcontent="${it.idx}">${body}</div>
+      <div class="card-actions">
+        <button class="speak-btn${isCached(it.nl)?' ready':''}" data-speak="${sk}" data-text="${nlAttr}" onclick="event.stopPropagation();playFrom(this)" title="Dinle (otomatik geçişli)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></button>
+        <button class="rate-btn${rateIdx?' slow':''}" onclick="event.stopPropagation();cycleRate()" title="Yavaşlat / Normal">${rateLabel()}</button>
+        <button class="teacher-btn" onclick="event.stopPropagation();askTeacher(${it.idx})" title="Gramer analizi">🎓</button>
+      </div></div>`;
+  }).join("");
+}
+
+function escHtml(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function showToast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("show"),2400); }
+
+// ===== DİLBİLGİSİ EĞİTİMİ =====
+const GRAMMAR=[
+ { ic:"👤", t:"Kişi Zamirleri", intro:"Cümlenin öznesi. Hollandaca'da 'sen' için iki biçim vardır: samimi (<b>jij/je</b>) ve resmî (<b>u</b>). İş hayatında, yolcuyla <b>daima u</b> kullanılır.",
+   rows:[{nl:"ik",tr:"ben"},{nl:"jij / je",tr:"sen (samimi)"},{nl:"u",tr:"siz (resmî)"},{nl:"hij",tr:"o (erkek)"},{nl:"zij / ze",tr:"o (kadın)"},{nl:"het",tr:"o (nesne/cinssiz)"},{nl:"wij / we",tr:"biz"},{nl:"jullie",tr:"siz (çoğul)"},{nl:"zij / ze",tr:"onlar"}],
+   kural:"je = jij'in vurgusuz hâli, ze = zij'in vurgusuz hâli (günlük konuşma). <b>u</b> her zaman saygı/resmiyet bildirir.",
+   ornek:{nl:"Waar gaat u naartoe?", tr:"Nereye gidiyorsunuz?", dekod:[{nl:"Waar",tr:"nereye",tur:"soru zarfı"},{nl:"gaat",tr:"gidiyor",tur:"fiil",not:"gaan fiili, 3.tekil/u çekimi"},{nl:"u",tr:"siz",tur:"zamir",not:"resmî kişi zamiri"},{nl:"naartoe",tr:"-e doğru",tur:"zarf",not:"yön belirtir"}]} },
+
+ { ic:"🔑", t:"İyelik Zamirleri", intro:"Sahiplik bildirir, ismin <b>önüne</b> gelir: 'benim biletim' → <b>mijn</b> kaartje.",
+   rows:[{nl:"mijn",tr:"benim"},{nl:"jouw / je",tr:"senin (samimi)"},{nl:"uw",tr:"sizin (resmî)"},{nl:"zijn",tr:"onun (erkek)"},{nl:"haar",tr:"onun (kadın)"},{nl:"ons / onze",tr:"bizim"},{nl:"jullie",tr:"sizin (çoğul)"},{nl:"hun",tr:"onların"}],
+   kural:"<b>ons</b> mu <b>onze</b> mi? het-kelimesi → ons (<i>ons huis</i>), de-kelimesi → onze (<i>onze bus</i>). Dikkat: <b>u</b> (siz) ile <b>uw</b> (sizin) ayrıdır.",
+   ornek:{nl:"Heeft u uw kaartje?", tr:"Biletiniz var mı?", dekod:[{nl:"Heeft",tr:"var mı",tur:"fiil",not:"hebben, 3.tekil/u — soruda başa geçti"},{nl:"u",tr:"siz",tur:"zamir",not:"özne"},{nl:"uw",tr:"sizin",tur:"iyelik",not:"resmî iyelik zamiri"},{nl:"kaartje",tr:"biletçik",tur:"isim",not:"kaart + -je küçültme → het-woord"}]} },
+
+ { ic:"⏳", t:"Geniş / Şimdiki Zaman", intro:"Önce fiilin <b>kökü</b> (stam) bulunur: mastardan -en atılır. <i>werken → werk</i>. Sonra şahsa göre ek gelir.",
+   rows:[{nl:"ik werk",tr:"(ben) çalışırım — kök"},{nl:"jij werkt",tr:"(sen) çalışırsın — kök+t"},{nl:"hij / zij / u werkt",tr:"çalışır — kök+t"},{nl:"wij / jullie / zij werken",tr:"çalışırız/-sınız/-lar — mastar"}],
+   kural:"ik = sadece kök. jij/hij/zij/u = kök + <b>t</b>. Çoğul = mastar (-en). Soruda/devrikte <b>jij</b>'den önce gelirse -t düşer: <i>werk jij?</i>",
+   ornek:{nl:"De bus rijdt naar het centrum.", tr:"Otobüs merkeze gider.", dekod:[{nl:"De",tr:"(belirli)",tur:"tanımlık"},{nl:"bus",tr:"otobüs",tur:"isim",not:"de-woord"},{nl:"rijdt",tr:"gider",tur:"fiil",not:"rijden, 3.tekil: kök rijd + t"},{nl:"naar",tr:"-e doğru",tur:"edat",not:"yön"},{nl:"het",tr:"(belirli)",tur:"tanımlık"},{nl:"centrum",tr:"merkez",tur:"isim",not:"het-woord"}]} },
+
+ { ic:"✅", t:"Geçmiş Zaman (Perfectum)", intro:"Bitmiş geçmiş: <b>yardımcı fiil</b> (hebben veya zijn) + <b>geçmiş ortaç</b>. Ortaç çoğunlukla <i>ge- + kök + -d/-t</i>.",
+   rows:[{nl:"ik heb gewerkt",tr:"çalıştım"},{nl:"jij hebt gewerkt",tr:"çalıştın"},{nl:"wij hebben gewerkt",tr:"çalıştık"},{nl:"ik ben gegaan",tr:"gittim (zijn ile)"},{nl:"de bus is vertrokken",tr:"otobüs kalktı"}],
+   kural:"Hareket/değişim fiilleri (gaan, komen, vertrekken…) → <b>zijn</b>. Çoğu fiil → <b>hebben</b>. -d/-t seçimi 't kofschip' kuralı: kök sessizi t/k/f/s/ch/p ise -t, değilse -d.",
+   ornek:{nl:"Ik heb vandaag gewerkt.", tr:"Bugün çalıştım.", dekod:[{nl:"Ik",tr:"ben",tur:"zamir"},{nl:"heb",tr:"(yardımcı)",tur:"fiil",not:"hebben, 1.tekil"},{nl:"vandaag",tr:"bugün",tur:"zarf"},{nl:"gewerkt",tr:"çalışılmış",tur:"ortaç",not:"ge+werk+t (geçmiş ortaç) — sonda"}]} },
+
+ { ic:"🔮", t:"Gelecek Zaman", intro:"İki yol var: <b>gaan + mastar</b> (planlı/yakın gelecek, konuşmada en sık) ya da <b>zullen + mastar</b>.",
+   rows:[{nl:"ik ga werken",tr:"çalışacağım"},{nl:"wij gaan vertrekken",tr:"kalkacağız"},{nl:"ik zal komen",tr:"geleceğim"},{nl:"het zal regenen",tr:"yağmur yağacak"}],
+   kural:"Mastar her zaman cümlenin <b>sonuna</b> gider: <i>Ik ga morgen <u>werken</u>.</i>",
+   ornek:{nl:"We gaan nu vertrekken.", tr:"Şimdi hareket edeceğiz.", dekod:[{nl:"We",tr:"biz",tur:"zamir"},{nl:"gaan",tr:"gideceğiz",tur:"fiil",not:"gaan, çoğul — gelecek kuruyor"},{nl:"nu",tr:"şimdi",tur:"zarf"},{nl:"vertrekken",tr:"hareket etmek",tur:"mastar",not:"cümlenin sonunda"}]} },
+
+ { ic:"🚏", t:"Tanımlıklar: de / het / een", intro:"Belirli tanımlık iki türlüdür: <b>de</b> ve <b>het</b>. Belirsiz tanımlık tektir: <b>een</b> (bir). Bir ismin de mi het mi olduğu büyük ölçüde ezberdir.",
+   rows:[{nl:"de bus",tr:"(o) otobüs"},{nl:"de halte",tr:"(o) durak"},{nl:"het kaartje",tr:"(o) bilet"},{nl:"het station",tr:"(o) istasyon"},{nl:"een bus",tr:"bir otobüs"}],
+   kural:"Tüm <b>çoğullar → de</b>. Tüm <b>küçültmeler (-je) → het</b>. Belirsizde (een) de/het ayrımı kaybolur. Yeni kelimeyi tanımlığıyla birlikte ezberle." },
+
+ { ic:"➕", t:"Çoğul (-en / -s)", intro:"İki ana çoğul eki vardır: <b>-en</b> (çoğunluk) ve <b>-s</b>.",
+   rows:[{nl:"bus → bussen",tr:"otobüsler"},{nl:"halte → haltes",tr:"duraklar"},{nl:"deur → deuren",tr:"kapılar"},{nl:"kind → kinderen",tr:"çocuklar (istisna)"},{nl:"auto → auto's",tr:"arabalar"}],
+   kural:"-el/-em/-en/-er ile ve sesliyle biten çoğu kelime → <b>-s</b>. Çoğu diğeri → <b>-en</b>. Kısa sesli, ünsüzü çiftler (bus→bussen); uzun sesli tek kalır (uur→uren)." },
+
+ { ic:"🎨", t:"Sıfat + -e Takısı", intro:"Sıfat ismin önüne gelince çoğunlukla <b>-e</b> takısı alır: <i>groot → grote</i>.",
+   rows:[{nl:"de grote bus",tr:"büyük otobüs"},{nl:"het grote station",tr:"büyük istasyon"},{nl:"een grote bus",tr:"bir büyük otobüs (de-woord)"},{nl:"een groot station",tr:"bir büyük istasyon (het-woord!)"}],
+   kural:"Tek istisna: <b>een + het-kelimesi</b> → sıfat -e ALMAZ (<i>een groot huis</i>). Diğer tüm durumlarda -e gelir." },
+
+ { ic:"🧭", t:"Edatlar (Voorzetsels)", intro:"Yer, yön ve zaman ilişkisi kuran sık kelimeler.",
+   rows:[{nl:"in",tr:"içinde"},{nl:"op",tr:"üstünde / -de"},{nl:"aan",tr:"-e bitişik"},{nl:"naar",tr:"-e doğru (yön)"},{nl:"van",tr:"-den / -in"},{nl:"met",tr:"ile"},{nl:"voor",tr:"için / önünde"},{nl:"achter",tr:"arkasında"},{nl:"naast",tr:"yanında"},{nl:"tussen",tr:"arasında"}],
+   kural:"<b>naar</b> = yön (gitmek), <b>in/op</b> = konum. Otobüsün içinde olmak: <i>in de bus</i> (op değil)." },
+
+ { ic:"🔀", t:"Kelime Sırası & Olumsuzluk", intro:"Düz cümlede çekimli fiil <b>daima 2. sıradadır</b> (V2 kuralı). Soru ve emirde özne ile fiil yer değiştirir (inversiyon).",
+   rows:[{nl:"Ik rijd vandaag.",tr:"Bugün sürüyorum. (özne+fiil)"},{nl:"Vandaag rijd ik.",tr:"Bugün sürüyorum. (zarf öne → fiil yine 2.)"},{nl:"Rijdt u vandaag?",tr:"Bugün sürüyor musunuz? (soru)"},{nl:"Ik rook niet.",tr:"Sigara içmem. (niet)"},{nl:"Ik heb geen kaartje.",tr:"Biletim yok. (geen)"}],
+   kural:"<b>niet</b> → fiili/sıfatı/belirliyi olumsuz yapar. <b>geen</b> → belirsiz ismi olumsuz: 'hiç … yok'. Mastar ve geçmiş ortaç cümlenin sonuna gider.",
+   ornek:{nl:"De bus stopt hier niet.", tr:"Otobüs burada durmaz.", dekod:[{nl:"De",tr:"(belirli)",tur:"tanımlık"},{nl:"bus",tr:"otobüs",tur:"isim"},{nl:"stopt",tr:"durur",tur:"fiil",not:"stoppen, 3.tekil — 2. sırada"},{nl:"hier",tr:"burada",tur:"zarf"},{nl:"niet",tr:"değil",tur:"olumsuzluk",not:"cümlenin sonunda"}]} }
+];
+
+function openGrammar(){
+  stopLoop();
+  const host=document.getElementById("gvBody");
+  if(!host.dataset.built){ buildGrammar(); host.dataset.built="1"; }
+  document.getElementById("grammarView").classList.add("show");
+  updateRateButtons(); host.scrollTop=0;
+}
+function closeGrammar(){ stopLoop(); document.getElementById("grammarView").classList.remove("show"); }
+function toggleLesson(li){
+  const el=document.getElementById(`lesson-${li}`); if(!el) return;
+  const wasOpen=el.classList.contains("open");
+  stopLoop();
+  document.querySelectorAll(".lesson.open").forEach(x=>x.classList.remove("open"));
+  if(!wasOpen) el.classList.add("open");
+}
+function speakG(li,ri){ const r=GRAMMAR[li].rows[ri]; if(r) speakText(r.nl,`g${li}-r${ri}`); }
+function speakGEx(li){ const e=GRAMMAR[li].ornek; if(e) speakText(e.nl,`g${li}-ex`); }
+function buildGrammar(){
+  const host=document.getElementById("gvBody");
+  host.innerHTML=`<div class="gv-intro">Önce mantığı çöz, ezber sonra otursun. Her satırı 🔊 ile dinle (tekrar için tekrar bas), hızı 🐢 ile ayarla.</div>`+GRAMMAR.map((L,li)=>{
+    const rows=(L.rows||[]).map((r,ri)=>`<div class="g-row"><span class="g-nl">${escHtml(r.nl)}</span><span class="g-tr">${escHtml(r.tr)}</span><button class="speak-btn${isCached(r.nl)?' ready':''}" data-speak="g${li}-r${ri}" data-text="${escHtml(r.nl).replace(/"/g,'&quot;')}" onclick="playFrom(this)" title="Dinle">🔊</button></div>`).join("");
+    let ex="";
+    if(L.ornek){
+      const e=L.ornek;
+      const dec=(e.dekod||[]).map(w=>`<div class="dx"><div class="dx-top"><span class="dx-nl">${escHtml(w.nl)}</span>${w.tur?`<span class="dx-tur">${escHtml(w.tur)}</span>`:''}</div><div class="dx-tr">→ "${escHtml(w.tr)}"</div>${w.not?`<div class="dx-not">⚙️ ${escHtml(w.not)}</div>`:''}</div>`).join("");
+      ex=`<div class="g-ex"><div class="g-ex-top"><span class="g-ex-nl">${escHtml(e.nl)}</span><button class="speak-btn${isCached(e.nl)?' ready':''}" data-speak="g${li}-ex" data-text="${escHtml(e.nl).replace(/"/g,'&quot;')}" onclick="playFrom(this)" title="Dinle">🔊</button></div><div class="g-ex-tr">${escHtml(e.tr)}</div>${dec}</div>`;
+    }
+    return `<div class="lesson" id="lesson-${li}"><div class="lesson-head" onclick="toggleLesson(${li})"><span class="lesson-ic">${L.ic}</span><span class="lesson-t">${escHtml(L.t)}</span><span class="lesson-ar">›</span></div><div class="lesson-body"><div class="g-intro">${L.intro}</div>${rows}${L.kural?`<div class="g-rule">📌 ${L.kural}</div>`:''}${ex}</div></div>`;
+  }).join("");
+}
+
+// ===== ÇİFT SESLİ KELİMELER (minimal pairs) =====
+const MINPAIRS=[
+ { baslik:"1–25 · Temel kısa/uzun ünlüler", pairs:[
+   {a:"man",at:"adam",b:"maan",bt:"ay"},
+   {a:"bed",at:"yatak",b:"beet",bt:"ısırır"},
+   {a:"vis",at:"balık",b:"vies",bt:"kirli"},
+   {a:"bos",at:"orman",b:"boos",bt:"kızgın"},
+   {a:"bot",at:"kemik",b:"boot",bt:"tekne"},
+   {a:"pot",at:"tencere",b:"poot",bt:"hayvan ayağı"},
+   {a:"kop",at:"kafa",b:"koop",bt:"satın alır"},
+   {a:"lot",at:"kura",b:"lood",bt:"kurşun"},
+   {a:"rok",at:"etek",b:"rook",bt:"duman"},
+   {a:"hok",at:"kulübe",b:"hoog",bt:"yüksek"}
+ ]},
+ { baslik:"26–50", pairs:[
+   {a:"rat",at:"fare",b:"raad",bt:"tavsiye"},
+   {a:"gat",at:"delik",b:"gaat",bt:"gider"},
+   {a:"kas",at:"sera / kasa",b:"kaas",bt:"peynir"},
+   {a:"val",at:"düşüş",b:"vaal",bt:"solgun"},
+   {a:"dak",at:"çatı",b:"daak",bt:"(arkaik kullanım)"},
+   {a:"lam",at:"kuzu",b:"laam",bt:"halsiz"},
+   {a:"ram",at:"koç",b:"raam",bt:"pencere"},
+   {a:"pas",at:"adım",b:"paas",bt:"paskalya"},
+   {a:"mes",at:"bıçak",b:"mees",bt:"baştankara (kuş)"},
+   {a:"bel",at:"zil",b:"beel",bt:"görüntü"}
+ ]},
+ { baslik:"51–75", pairs:[
+   {a:"bit",at:"bit",b:"biet",bt:"pancar"},
+   {a:"pit",at:"çekirdek",b:"piet",bt:"isim"},
+   {a:"wil",at:"ister",b:"wiel",bt:"tekerlek"},
+   {a:"kin",at:"çene",b:"kien",bt:"zeki"},
+   {a:"lip",at:"dudak",b:"liep",bt:"yürüdü"},
+   {a:"kip",at:"tavuk",b:"kiep",bt:"sepet"},
+   {a:"min",at:"eksi",b:"mien",bt:"isim"},
+   {a:"sik",at:"keçi sakalı",b:"ziek",bt:"hasta"},
+   {a:"vet",at:"yağlı",b:"weet",bt:"bilir"},
+   {a:"zet",at:"koyar",b:"zeet",bt:"(eski deniz)"}
+ ]},
+ { baslik:"76–100 · Zor sesler + ileri seviye", pairs:[
+   {a:"bus",at:"otobüs",b:"buur",bt:"komşu"},
+   {a:"mus",at:"serçe",b:"muur",bt:"duvar"},
+   {a:"kus",at:"öpücük",b:"kuur",bt:"kür"},
+   {a:"put",at:"kuyu",b:"puut",bt:"(ses)"},
+   {a:"nul",at:"sıfır",b:"nuul",bt:"(uzatma)"},
+   {a:"rug",at:"sırt",b:"ruug",bt:"kaba"},
+   {a:"dun",at:"ince",b:"duur",bt:"pahalı"},
+   {a:"stuk",at:"parça",b:"stuur",bt:"direksiyon"},
+   {a:"huis",at:"ev",b:"huis",bt:"(aynı yazım — varyasyon için tekrar dinle)"},
+   {a:"tijd",at:"zaman",b:"teed",bt:"(telaffuz varyasyonu çalışması)"}
+ ]}
+];
+
+function openPairs(){
+  stopLoop();
+  const host=document.getElementById("pvBody");
+  if(!host.dataset.built){ buildPairs(); host.dataset.built="1"; }
+  document.getElementById("pairsView").classList.add("show");
+  updateRateButtons(); host.scrollTop=0;
+}
+function closePairs(){ stopLoop(); document.getElementById("pairsView").classList.remove("show"); }
+function toggleSection(si){
+  const el=document.getElementById(`pair-sec-${si}`); if(!el) return;
+  const wasOpen=el.classList.contains("open");
+  stopLoop();
+  document.querySelectorAll("#pvBody .lesson.open").forEach(x=>x.classList.remove("open"));
+  if(!wasOpen) el.classList.add("open");
+}
+function speakMP(si,pi,w){ const p=MINPAIRS[si].pairs[pi]; if(!p) return; speakText(w==="b"?p.b:p.a, `m${si}-${pi}${w}`); }
+function buildPairs(){
+  const host=document.getElementById("pvBody");
+  host.innerHTML=`<div class="gv-intro">Solda <b>kısa</b>, sağda <b>uzun</b> ünlü. 🔊 ile dinle — tekrar için tekrar bas, 🐢 ile yavaşlat. Türkçesi yalnızca anlamı görmen için; <b>okunmaz</b>, sen Hollandaca telaffuza odaklan.</div>`+MINPAIRS.map((S,si)=>{
+    const rows=S.pairs.map((p,pi)=>`<div class="pair">
+      <div class="pw" onclick="if(!event.target.closest('.speak-btn'))this.querySelector('.speak-btn').click()" style="cursor:pointer"><div class="pw-tag">kısa</div><div class="pw-nl">${escHtml(p.a)}</div><div class="pw-tr">${escHtml(p.at)}</div><button class="speak-btn pw-speak${isCached(p.a)?' ready':''}" data-speak="m${si}-${pi}a" data-text="${escHtml(p.a).replace(/"/g,'&quot;')}" onclick="event.stopPropagation();playFrom(this)" title="Dinle">🔊</button></div>
+      <div class="pair-mid">↔</div>
+      <div class="pw long" onclick="if(!event.target.closest('.speak-btn'))this.querySelector('.speak-btn').click()" style="cursor:pointer"><div class="pw-tag">uzun</div><div class="pw-nl">${escHtml(p.b)}</div><div class="pw-tr">${escHtml(p.bt)}</div><button class="speak-btn pw-speak${isCached(p.b)?' ready':''}" data-speak="m${si}-${pi}b" data-text="${escHtml(p.b).replace(/"/g,'&quot;')}" onclick="event.stopPropagation();playFrom(this)" title="Dinle">🔊</button></div>
+    </div>`).join("");
+    return `<div class="lesson" id="pair-sec-${si}"><div class="lesson-head" onclick="toggleSection(${si})"><span class="lesson-ic">🎧</span><span class="lesson-t">${escHtml(S.baslik)}</span><span class="lesson-ar">›</span></div><div class="lesson-body" data-playlist="pair-${si}">${rows}</div></div>`;
+  }).join("");
+}
+
+// ===== INIT =====
+loadState(); initDaily(); initCategories(); renderCards(); updateBanner(); updateRateButtons(); updateRepButtons(); updateStats();
+loadCachedKeys().then(renderCards);
+document.getElementById("headerSub").textContent=`${DATA.length} ifade · Hollandaca / Türkçe`;
+</script>
+</body>
+</html>
